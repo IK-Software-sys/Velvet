@@ -3,35 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Victorian Rummy</title>
+    <title>Dark Fantasy Rummy</title>
     <style>
-        /* --- VICTORIAN THEME & LAYOUT --- */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+        /* --- DARK SOULS / SKYRIM THEME --- */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none; /* Prevent text selection on mobile */
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #1a0f0f;
-            color: #d4af37; /* Metallic Gold */
-            font-family: 'Playfair Display', serif;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Cinzel', serif;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
         }
 
-        canvas#fireCanvas {
+        /* Embers Background */
+        canvas#emberCanvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.6;
+            opacity: 0.8;
         }
 
         /* --- MENUS --- */
@@ -45,35 +47,42 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(40,20,20,0.8) 0%, rgba(10,5,5,1) 100%);
+            background: radial-gradient(circle, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
             z-index: 10;
-            transition: opacity 1s ease-in-out;
+            transition: opacity 1.5s ease-in-out;
         }
 
         #main-menu h1 {
-            font-size: 3rem;
-            text-shadow: 2px 2px 5px #000;
-            margin-bottom: 30px;
+            font-size: 3.5rem;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
+            margin-bottom: 40px;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
 
-        .vic-btn {
-            background: linear-gradient(135deg, #4a2511 0%, #2b1105 100%);
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            padding: 15px 40px;
+        .souls-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 15px 50px;
             font-size: 1.5rem;
-            font-family: 'Playfair Display', serif;
+            font-family: 'Cinzel', serif;
             cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
         }
 
-        .vic-btn:active {
-            transform: scale(0.95);
+        .souls-btn:hover {
+            border: 1px solid #ffffff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .souls-btn:active {
+            transform: scale(0.98);
         }
 
         /* --- GAME AREA --- */
@@ -87,308 +96,393 @@
             position: relative;
         }
 
+        #game-status {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
         .hand {
             display: flex;
             justify-content: center;
-            height: 25vh;
+            height: 28vh;
             align-items: center;
-            gap: -20px; /* Overlap cards */
+            gap: -35px; /* Tighter overlap for bigger cards */
         }
 
         #table-center {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            height: 40vh;
+            gap: 30px;
+            height: 35vh;
         }
 
+        /* Bigger, borderless cards */
         .card {
-            width: 18vw;
-            max-width: 100px;
+            width: 24vw; 
+            max-width: 130px;
             height: auto;
             aspect-ratio: 2.5 / 3.5;
-            border-radius: 8px;
-            border: 1px solid #d4af37;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            border-radius: 6px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.1);
             background-size: cover;
             background-position: center;
-            background-image: url('back.png'); /* Default to back */
-            transition: transform 0.3s;
+            background-image: url('back.png');
+            transition: transform 0.3s, filter 0.3s;
             position: relative;
             cursor: pointer;
         }
 
-        /* Animations */
         .card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-15px);
+            z-index: 10;
         }
 
-        .deal-anim {
-            animation: dealCard 0.5s ease-out forwards;
+        .highlight {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
         }
 
-        .throw-anim {
-            animation: throwCard 0.4s ease-in forwards;
-        }
+        /* Animations */
+        .deal-anim { animation: dealCard 0.4s ease-out forwards; }
+        .throw-anim { animation: throwCard 0.3s ease-in forwards; }
 
         @keyframes dealCard {
-            from { transform: translate(-50vw, -50vh) rotate(-180deg) scale(0.5); opacity: 0; }
-            to { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+            from { transform: translateY(-50vh) scale(0.5); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         @keyframes throwCard {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(0, -30vh) rotate(15deg) scale(0.8); opacity: 0; }
+            from { transform: translateY(0) scale(1); }
+            to { transform: translateY(-20vh) scale(0.8); opacity: 0; filter: brightness(2); }
         }
 
         /* Music Manager UI */
         #music-manager {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             z-index: 5;
         }
 
         .small-btn {
-            padding: 5px 10px;
+            padding: 8px 15px;
             font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.3);
         }
     </style>
 </head>
 <body>
 
-    <canvas id="fireCanvas"></canvas>
+    <canvas id="emberCanvas"></canvas>
 
     <div id="main-menu">
         <h1>Victorian Rummy</h1>
-        <button class="vic-btn" id="start-btn">Enter Parlour</button>
-        <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Ensure audio is unmuted</p>
+        <button class="souls-btn" id="start-btn">Begin Journey</button>
     </div>
 
     <div id="game-area">
         <div id="music-manager">
-            <button class="vic-btn small-btn" id="skip-song-btn">Skip Track</button>
+            <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
         </div>
+
+        <div id="game-status">Draw a card</div>
 
         <div class="hand" id="ai-hand"></div>
 
         <div id="table-center">
             <div class="card" id="draw-deck" style="background-image: url('back.png');"></div>
-            <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0.5;"></div>
+            <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0;"></div>
         </div>
 
         <div class="hand" id="player-hand"></div>
     </div>
 
     <script>
-        // --- ASSET CONFIGURATION ---
         const cardNames = [
-            // Spades
             'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
-            // Clubs
             'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
-            // Hearts
             'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
-            // Diamonds
             'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg'
         ];
 
         // --- AUDIO MANAGER ---
-        const audioCtx = window.AudioContext || window.webkitAudioContext;
         const sfxPlay = new Audio('play.mp3');
-        const bgmMenu = new Audio('menusong.mp3');
-        bgmMenu.loop = true;
+        sfxPlay.volume = 0.8;
 
-        const bgmSummer = new Audio('summer.mp3');
-        const bgmWinter = new Audio('winter.mp3');
-        const inGamePlaylist = [bgmSummer, bgmWinter];
+        // Equalized Volume Settings
+        const MASTER_VOLUME = 0.5;
+
+        const menuMusic = new Audio('winter.mp3');
+        menuMusic.loop = true;
+        menuMusic.volume = MASTER_VOLUME;
+
+        const track1 = new Audio('menumusic.mp3'); track1.volume = MASTER_VOLUME;
+        const track2 = new Audio('winter.mp3');    track2.volume = MASTER_VOLUME;
+        const track3 = new Audio('summer.mp3');    track3.volume = MASTER_VOLUME;
+        
+        const inGamePlaylist = [track1, track2, track3];
         let currentSongIndex = 0;
 
-        // Automatically go to next song when one finishes
-        bgmSummer.addEventListener('ended', playNextSong);
-        bgmWinter.addEventListener('ended', playNextSong);
+        track1.addEventListener('ended', playNextSong);
+        track2.addEventListener('ended', playNextSong);
+        track3.addEventListener('ended', playNextSong);
 
         function playNextSong() {
+            // Stop current
             inGamePlaylist[currentSongIndex].pause();
             inGamePlaylist[currentSongIndex].currentTime = 0;
+            // Move to next
             currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
-            inGamePlaylist[currentSongIndex].play().catch(e => console.log("Audio play blocked"));
+            // Play next
+            inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
         }
 
         document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
 
-        // Auto-play menu song on first interaction (browser policy workaround)
+        // Auto-play menu
         document.body.addEventListener('click', () => {
-            if(document.getElementById('main-menu').style.display !== 'none' && bgmMenu.paused) {
-                bgmMenu.play().catch(e => console.log("Audio waiting for interaction"));
+            if(document.getElementById('main-menu').style.display !== 'none' && menuMusic.paused) {
+                menuMusic.play().catch(e => console.log(e));
             }
         }, {once: true});
 
-        // --- GAME LOGIC SKELETON ---
+
+        // --- RUMMY GAME STATE LOGIC ---
         let deck = [];
         let playerHand = [];
+        let aiHand = [];
+        let discardPile = [];
         
-        document.getElementById('start-btn').addEventListener('click', () => {
-            // Audio transitions
-            bgmMenu.pause();
-            inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
+        // States: 'PLAYER_DRAW', 'PLAYER_DISCARD', 'AI_TURN'
+        let gameState = 'PLAYER_DRAW'; 
+        const statusEl = document.getElementById('game-status');
 
-            // UI transitions
+        document.getElementById('start-btn').addEventListener('click', () => {
+            menuMusic.pause();
+            menuMusic.currentTime = 0;
+            inGamePlaylist[0].play().catch(e => console.log(e));
+
             const menu = document.getElementById('main-menu');
             menu.style.opacity = '0';
             setTimeout(() => {
                 menu.style.display = 'none';
                 document.getElementById('game-area').style.display = 'flex';
                 initializeGame();
-            }, 1000);
+            }, 1500);
         });
 
         function initializeGame() {
-            // Shuffle exactly the deck requested
             deck = [...cardNames].sort(() => Math.random() - 0.5);
-            
-            // Deal 10 cards to AI and Player
             dealInitialCards();
         }
 
         function dealInitialCards() {
             const pHandEl = document.getElementById('player-hand');
             const aiHandEl = document.getElementById('ai-hand');
-            pHandEl.innerHTML = '';
-            aiHandEl.innerHTML = '';
+            pHandEl.innerHTML = ''; aiHandEl.innerHTML = '';
+            playerHand = []; aiHand = [];
 
             for(let i = 0; i < 10; i++) {
                 setTimeout(() => {
-                    // Deal to AI (facedown)
+                    // AI Card
                     let aiCard = document.createElement('div');
                     aiCard.className = 'card deal-anim';
-                    aiCard.style.marginLeft = '-30px'; // overlap
+                    aiCard.style.marginLeft = '-40px';
                     aiHandEl.appendChild(aiCard);
+                    aiHand.push('hidden'); // Placeholder for AI logic
                     sfxPlay.cloneNode().play();
 
-                    // Deal to Player (face up)
-                    let pCard = deck.pop();
-                    playerHand.push(pCard);
-                    let pCardEl = document.createElement('div');
-                    pCardEl.className = 'card deal-anim';
-                    pCardEl.style.backgroundImage = `url('${pCard}')`;
-                    pCardEl.style.marginLeft = '-30px';
-                    
-                    // Discard card logic
-                    pCardEl.addEventListener('click', function() {
-                        throwCard(this, pCard);
-                    });
-
+                    // Player Card
+                    let pCardStr = deck.pop();
+                    playerHand.push(pCardStr);
+                    let pCardEl = createPlayerCard(pCardStr);
                     pHandEl.appendChild(pCardEl);
                     sfxPlay.cloneNode().play();
-                }, i * 300); // Deal animation stagger
+                }, i * 200);
+            }
+
+            // Flip first discard
+            setTimeout(() => {
+                let firstDiscard = deck.pop();
+                discardPile.push(firstDiscard);
+                updateDiscardUI();
+                setGameState('PLAYER_DRAW');
+            }, 2200);
+        }
+
+        function createPlayerCard(cardName) {
+            let el = document.createElement('div');
+            el.className = 'card deal-anim';
+            el.style.backgroundImage = `url('${cardName}')`;
+            el.style.marginLeft = '-40px';
+            el.dataset.card = cardName;
+            
+            el.addEventListener('click', function() {
+                if(gameState !== 'PLAYER_DISCARD') return;
+                
+                // Discard logic
+                playerHand = playerHand.filter(c => c !== cardName);
+                discardPile.push(cardName);
+                
+                this.classList.add('throw-anim');
+                sfxPlay.cloneNode().play();
+                
+                setTimeout(() => {
+                    this.remove();
+                    updateDiscardUI();
+                    setGameState('AI_TURN');
+                    setTimeout(aiTurn, 1000);
+                }, 300);
+            });
+            return el;
+        }
+
+        function updateDiscardUI() {
+            const discardEl = document.getElementById('discard-pile');
+            if(discardPile.length > 0) {
+                discardEl.style.backgroundImage = `url('${discardPile[discardPile.length - 1]}')`;
+                discardEl.style.opacity = '1';
+            } else {
+                discardEl.style.opacity = '0';
             }
         }
 
-        // Draw card mechanics
+        function setGameState(state) {
+            gameState = state;
+            const drawDeck = document.getElementById('draw-deck');
+            const discardEl = document.getElementById('discard-pile');
+
+            if(state === 'PLAYER_DRAW') {
+                statusEl.innerText = "Draw from Deck or Discard";
+                drawDeck.classList.add('highlight');
+                if(discardPile.length > 0) discardEl.classList.add('highlight');
+            } else if (state === 'PLAYER_DISCARD') {
+                statusEl.innerText = "Discard a card";
+                drawDeck.classList.remove('highlight');
+                discardEl.classList.remove('highlight');
+            } else {
+                statusEl.innerText = "Opponent's Turn";
+                drawDeck.classList.remove('highlight');
+                discardEl.classList.remove('highlight');
+            }
+        }
+
+        // --- DRAWING ACTIONS ---
         document.getElementById('draw-deck').addEventListener('click', () => {
-            if(deck.length === 0) return;
+            if(gameState !== 'PLAYER_DRAW' || deck.length === 0) return;
             sfxPlay.cloneNode().play();
             
-            let pCard = deck.pop();
-            playerHand.push(pCard);
-            let pCardEl = document.createElement('div');
-            pCardEl.className = 'card deal-anim';
-            pCardEl.style.backgroundImage = `url('${pCard}')`;
-            pCardEl.style.marginLeft = '-30px';
+            let drawnCard = deck.pop();
+            playerHand.push(drawnCard);
+            document.getElementById('player-hand').appendChild(createPlayerCard(drawnCard));
             
-            pCardEl.addEventListener('click', function() {
-                throwCard(this, pCard);
-            });
-            
-            document.getElementById('player-hand').appendChild(pCardEl);
-
-            // Simple AI turn trigger
-            setTimeout(aiTurn, 1000);
+            setGameState('PLAYER_DISCARD');
         });
 
-        function throwCard(cardElement, cardName) {
-            // Visual throw
-            cardElement.classList.add('throw-anim');
+        document.getElementById('discard-pile').addEventListener('click', () => {
+            if(gameState !== 'PLAYER_DRAW' || discardPile.length === 0) return;
             sfxPlay.cloneNode().play();
             
-            setTimeout(() => {
-                cardElement.remove();
-                document.getElementById('discard-pile').style.backgroundImage = `url('${cardName}')`;
-                document.getElementById('discard-pile').style.opacity = '1';
-            }, 400); // matches CSS animation duration
-        }
+            let pickedCard = discardPile.pop();
+            playerHand.push(pickedCard);
+            document.getElementById('player-hand').appendChild(createPlayerCard(pickedCard));
+            updateDiscardUI();
 
+            setGameState('PLAYER_DISCARD');
+        });
+
+        // --- AI LOGIC (SKELETON) ---
         function aiTurn() {
-            // Placeholder for AI thinking logic. 
-            // Currently just simulates a delay and "plays" a card.
-            const aiHandEl = document.getElementById('ai-hand');
-            if(aiHandEl.children.length > 0) {
-                let cardToPlay = aiHandEl.children[0];
-                cardToPlay.classList.add('throw-anim');
+            // 1. AI Draws (from deck for now)
+            if(deck.length > 0) {
+                deck.pop(); 
                 sfxPlay.cloneNode().play();
+                const aiHandEl = document.getElementById('ai-hand');
+                let newAiCard = document.createElement('div');
+                newAiCard.className = 'card deal-anim';
+                newAiCard.style.marginLeft = '-40px';
+                aiHandEl.appendChild(newAiCard);
+                
+                // 2. AI Discards
                 setTimeout(() => {
-                    cardToPlay.remove();
-                    // Just shows a random back or fake card on discard for prototype
-                    document.getElementById('discard-pile').style.backgroundImage = `url('back.png')`; 
-                }, 400);
+                    if(aiHandEl.children.length > 0) {
+                        let cardToThrow = aiHandEl.lastChild;
+                        cardToThrow.classList.add('throw-anim');
+                        sfxPlay.cloneNode().play();
+                        
+                        // Fake a discard card since AI doesn't know its hand yet
+                        let randomDiscard = cardNames[Math.floor(Math.random() * cardNames.length)];
+                        discardPile.push(randomDiscard);
+                        
+                        setTimeout(() => {
+                            cardToThrow.remove();
+                            updateDiscardUI();
+                            setGameState('PLAYER_DRAW');
+                        }, 300);
+                    }
+                }, 1000);
             }
         }
 
-        // --- FIRE PARTICLES ---
-        const canvas = document.getElementById('fireCanvas');
+        // --- DARK SOULS EMBERS ---
+        const canvas = document.getElementById('emberCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let particlesArray = [];
-        class Particle {
+        let embersArray = [];
+        class Ember {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = canvas.height + Math.random() * 100;
-                this.size = Math.random() * 5 + 1;
-                this.speedY = Math.random() * 3 + 1;
-                this.speedX = Math.random() * 2 - 1;
-                this.color = 'rgba(255, ' + Math.floor(Math.random() * 100 + 50) + ', 0, 0.8)';
+                this.size = Math.random() * 3 + 0.5; // Smaller
+                this.speedY = Math.random() * 1.5 + 0.5; // Slower
+                this.speedX = Math.random() * 1 - 0.5;
+                this.color = `rgba(255, ${Math.random() * 100 + 100}, 50, ${Math.random() * 0.8 + 0.2})`; // Orange/White
             }
             update() {
                 this.y -= this.speedY;
                 this.x += this.speedX;
-                if (this.size > 0.1) this.size -= 0.05;
-                if (this.y < 0 || this.size <= 0.1) {
+                if (this.size > 0.05) this.size -= 0.01;
+                if (this.y < 0 || this.size <= 0.05) {
                     this.x = Math.random() * canvas.width;
                     this.y = canvas.height + 50;
-                    this.size = Math.random() * 5 + 1;
+                    this.size = Math.random() * 3 + 0.5;
                 }
             }
             draw() {
                 ctx.fillStyle = this.color;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = this.color;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
             }
         }
 
-        function handleParticles() {
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
-            }
+        function initEmbers() {
+            for (let i = 0; i < 80; i++) embersArray.push(new Ember());
         }
-
-        function initParticles() {
-            for (let i = 0; i < 100; i++) {
-                particlesArray.push(new Particle());
-            }
-        }
-        initParticles();
+        initEmbers();
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            handleParticles();
+            for (let i = 0; i < embersArray.length; i++) {
+                embersArray[i].update();
+                embersArray[i].draw();
+            }
             requestAnimationFrame(animate);
         }
         animate();
