@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Victorian Rummy</title>
+    <style>
+        /* --- VICTORIAN THEME & LAYOUT --- */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Prevent text selection on mobile */
+        }
+
+        body {
+            background-color: #1a0f0f;
+            color: #d4af37; /* Metallic Gold */
+            font-family: 'Playfair Display', serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas#fireCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* --- MENUS --- */
+        #main-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(40,20,20,0.8) 0%, rgba(10,5,5,1) 100%);
+            z-index: 10;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #main-menu h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .vic-btn {
+            background: linear-gradient(135deg, #4a2511 0%, #2b1105 100%);
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Playfair Display', serif;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+
+        .vic-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- GAME AREA --- */
+        #game-area {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            position: relative;
+        }
+
+        .hand {
+            display: flex;
+            justify-content: center;
+            height: 25vh;
+            align-items: center;
+            gap: -20px; /* Overlap cards */
+        }
+
+        #table-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            height: 40vh;
+        }
+
+        .card {
+            width: 18vw;
+            max-width: 100px;
+            height: auto;
+            aspect-ratio: 2.5 / 3.5;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            background-size: cover;
+            background-position: center;
+            background-image: url('back.png'); /* Default to back */
+            transition: transform 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* Animations */
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .deal-anim {
+            animation: dealCard 0.5s ease-out forwards;
+        }
+
+        .throw-anim {
+            animation: throwCard 0.4s ease-in forwards;
+        }
+
+        @keyframes dealCard {
+            from { transform: translate(-50vw, -50vh) rotate(-180deg) scale(0.5); opacity: 0; }
+            to { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes throwCard {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(0, -30vh) rotate(15deg) scale(0.8); opacity: 0; }
+        }
+
+        /* Music Manager UI */
+        #music-manager {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        .small-btn {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="fireCanvas"></canvas>
+
+    <div id="main-menu">
+        <h1>Victorian Rummy</h1>
+        <button class="vic-btn" id="start-btn">Enter Parlour</button>
+        <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Ensure audio is unmuted</p>
+    </div>
+
+    <div id="game-area">
+        <div id="music-manager">
+            <button class="vic-btn small-btn" id="skip-song-btn">Skip Track</button>
+        </div>
+
+        <div class="hand" id="ai-hand"></div>
+
+        <div id="table-center">
+            <div class="card" id="draw-deck" style="background-image: url('back.png');"></div>
+            <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0.5;"></div>
+        </div>
+
+        <div class="hand" id="player-hand"></div>
+    </div>
+
+    <script>
+        // --- ASSET CONFIGURATION ---
+        const cardNames = [
+            // Spades
+            'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
+            // Clubs
+            'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
+            // Hearts
+            'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
+            // Diamonds
+            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg'
+        ];
+
+        // --- AUDIO MANAGER ---
+        const audioCtx = window.AudioContext || window.webkitAudioContext;
+        const sfxPlay = new Audio('play.mp3');
+        const bgmMenu = new Audio('menusong.mp3');
+        bgmMenu.loop = true;
+
+        const bgmSummer = new Audio('summer.mp3');
+        const bgmWinter = new Audio('winter.mp3');
+        const inGamePlaylist = [bgmSummer, bgmWinter];
+        let currentSongIndex = 0;
+
+        // Automatically go to next song when one finishes
+        bgmSummer.addEventListener('ended', playNextSong);
+        bgmWinter.addEventListener('ended', playNextSong);
+
+        function playNextSong() {
+            inGamePlaylist[currentSongIndex].pause();
+            inGamePlaylist[currentSongIndex].currentTime = 0;
+            currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
+            inGamePlaylist[currentSongIndex].play().catch(e => console.log("Audio play blocked"));
+        }
+
+        document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
+
+        // Auto-play menu song on first interaction (browser policy workaround)
+        document.body.addEventListener('click', () => {
+            if(document.getElementById('main-menu').style.display !== 'none' && bgmMenu.paused) {
+                bgmMenu.play().catch(e => console.log("Audio waiting for interaction"));
+            }
+        }, {once: true});
+
+        // --- GAME LOGIC SKELETON ---
+        let deck = [];
+        let playerHand = [];
+        
+        document.getElementById('start-btn').addEventListener('click', () => {
+            // Audio transitions
+            bgmMenu.pause();
+            inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
+
+            // UI transitions
+            const menu = document.getElementById('main-menu');
+            menu.style.opacity = '0';
+            setTimeout(() => {
+                menu.style.display = 'none';
+                document.getElementById('game-area').style.display = 'flex';
+                initializeGame();
+            }, 1000);
+        });
+
+        function initializeGame() {
+            // Shuffle exactly the deck requested
+            deck = [...cardNames].sort(() => Math.random() - 0.5);
+            
+            // Deal 10 cards to AI and Player
+            dealInitialCards();
+        }
+
+        function dealInitialCards() {
+            const pHandEl = document.getElementById('player-hand');
+            const aiHandEl = document.getElementById('ai-hand');
+            pHandEl.innerHTML = '';
+            aiHandEl.innerHTML = '';
+
+            for(let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    // Deal to AI (facedown)
+                    let aiCard = document.createElement('div');
+                    aiCard.className = 'card deal-anim';
+                    aiCard.style.marginLeft = '-30px'; // overlap
+                    aiHandEl.appendChild(aiCard);
+                    sfxPlay.cloneNode().play();
+
+                    // Deal to Player (face up)
+                    let pCard = deck.pop();
+                    playerHand.push(pCard);
+                    let pCardEl = document.createElement('div');
+                    pCardEl.className = 'card deal-anim';
+                    pCardEl.style.backgroundImage = `url('${pCard}')`;
+                    pCardEl.style.marginLeft = '-30px';
+                    
+                    // Discard card logic
+                    pCardEl.addEventListener('click', function() {
+                        throwCard(this, pCard);
+                    });
+
+                    pHandEl.appendChild(pCardEl);
+                    sfxPlay.cloneNode().play();
+                }, i * 300); // Deal animation stagger
+            }
+        }
+
+        // Draw card mechanics
+        document.getElementById('draw-deck').addEventListener('click', () => {
+            if(deck.length === 0) return;
+            sfxPlay.cloneNode().play();
+            
+            let pCard = deck.pop();
+            playerHand.push(pCard);
+            let pCardEl = document.createElement('div');
+            pCardEl.className = 'card deal-anim';
+            pCardEl.style.backgroundImage = `url('${pCard}')`;
+            pCardEl.style.marginLeft = '-30px';
+            
+            pCardEl.addEventListener('click', function() {
+                throwCard(this, pCard);
+            });
+            
+            document.getElementById('player-hand').appendChild(pCardEl);
+
+            // Simple AI turn trigger
+            setTimeout(aiTurn, 1000);
+        });
+
+        function throwCard(cardElement, cardName) {
+            // Visual throw
+            cardElement.classList.add('throw-anim');
+            sfxPlay.cloneNode().play();
+            
+            setTimeout(() => {
+                cardElement.remove();
+                document.getElementById('discard-pile').style.backgroundImage = `url('${cardName}')`;
+                document.getElementById('discard-pile').style.opacity = '1';
+            }, 400); // matches CSS animation duration
+        }
+
+        function aiTurn() {
+            // Placeholder for AI thinking logic. 
+            // Currently just simulates a delay and "plays" a card.
+            const aiHandEl = document.getElementById('ai-hand');
+            if(aiHandEl.children.length > 0) {
+                let cardToPlay = aiHandEl.children[0];
+                cardToPlay.classList.add('throw-anim');
+                sfxPlay.cloneNode().play();
+                setTimeout(() => {
+                    cardToPlay.remove();
+                    // Just shows a random back or fake card on discard for prototype
+                    document.getElementById('discard-pile').style.backgroundImage = `url('back.png')`; 
+                }, 400);
+            }
+        }
+
+        // --- FIRE PARTICLES ---
+        const canvas = document.getElementById('fireCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 5 + 1;
+                this.speedY = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.color = 'rgba(255, ' + Math.floor(Math.random() * 100 + 50) + ', 0, 0.8)';
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.size > 0.1) this.size -= 0.05;
+                if (this.y < 0 || this.size <= 0.1) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 50;
+                    this.size = Math.random() * 5 + 1;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function handleParticles() {
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+        initParticles();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
