@@ -34,25 +34,43 @@
             height: 100%;
             z-index: -1;
             opacity: 0.8;
+            pointer-events: none;
         }
 
-        /* --- MENUS --- */
-        #main-menu {
+        /* --- OVERLAYS & MENUS --- */
+        #interaction-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            animation: pulseText 2s infinite;
+        }
+
+        @keyframes pulseText {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; text-shadow: 0 0 15px #fff; }
+            100% { opacity: 0.5; }
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background: radial-gradient(circle, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
             z-index: 10;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 1s ease-in-out;
         }
 
-        #main-menu h1 {
+        h1 {
             font-size: 3.5rem;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
             margin-bottom: 40px;
@@ -73,6 +91,7 @@
             letter-spacing: 2px;
             text-shadow: 0 0 8px rgba(255,255,255,0.5);
             transition: all 0.3s ease;
+            margin: 10px;
         }
 
         .souls-btn:hover {
@@ -85,6 +104,20 @@
             transform: scale(0.98);
         }
 
+        /* --- TUTORIAL --- */
+        #tutorial-content {
+            max-width: 600px;
+            text-align: left;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.7);
+            padding: 30px;
+            border: 1px solid #333;
+            box-shadow: 0 0 20px rgba(0,0,0,1);
+        }
+        #tutorial-content h2 { margin-bottom: 20px; text-align: center; border-bottom: 1px solid #555; padding-bottom: 10px;}
+        #tutorial-content ul { margin-left: 20px; line-height: 1.8; font-family: sans-serif; font-size: 1.1rem; }
+        #tutorial-content li { margin-bottom: 10px; }
+
         /* --- GAME AREA --- */
         #game-area {
             display: none;
@@ -92,13 +125,13 @@
             height: 100%;
             flex-direction: column;
             justify-content: space-between;
-            padding: 20px;
+            padding: 20px 0;
             position: relative;
         }
 
         #game-status {
             position: absolute;
-            top: 40%;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 1.5rem;
@@ -106,43 +139,89 @@
             z-index: 2;
             pointer-events: none;
             opacity: 0.8;
+            text-align: center;
         }
 
-        .hand {
+        /* Top Hand (AI) */
+        .ai-hand-container {
             display: flex;
             justify-content: center;
-            height: 28vh;
+            height: 25vh;
+            align-items: flex-start;
+        }
+        
+        .hand {
+            display: flex;
             align-items: center;
-            gap: -35px; /* Tighter overlap for bigger cards */
+            gap: -40px; 
         }
 
+        /* Center Table */
         #table-center {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 30px;
-            height: 35vh;
+            gap: 40px;
+            height: 30vh;
+        }
+
+        /* Bottom Hand (Player) - Horizontally Scrollable */
+        .player-hand-wrapper {
+            width: 90%;
+            margin: 0 auto;
+            overflow-x: auto;
+            overflow-y: hidden;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+            height: 32vh;
+            padding-bottom: 15px; /* Space for scrollbar */
+            padding-top: 20px;
+        }
+
+        /* Black Strip Scrollbar */
+        .player-hand-wrapper::-webkit-scrollbar {
+            height: 14px;
+            background-color: #000000;
+            border: 1px solid #222;
+        }
+        .player-hand-wrapper::-webkit-scrollbar-thumb {
+            background-color: #333;
+            border-radius: 0;
+            border: 1px solid #555;
+        }
+        .player-hand-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+
+        .player-hand-wrapper .hand {
+            /* Keep cards tight, but allow stretching container */
+            padding: 0 20px;
+            min-width: min-content; 
         }
 
         /* Bigger, borderless cards */
         .card {
-            width: 24vw; 
-            max-width: 130px;
-            height: auto;
-            aspect-ratio: 2.5 / 3.5;
+            width: 110px; 
+            height: 160px;
             border-radius: 6px;
             border: none;
             box-shadow: 0 5px 15px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.1);
             background-size: cover;
             background-position: center;
             background-image: url('back.png');
-            transition: transform 0.3s, filter 0.3s;
+            transition: transform 0.3s, filter 0.3s, margin 0.3s;
             position: relative;
             cursor: pointer;
+            flex-shrink: 0;
+            margin-left: -35px; /* Overlap */
         }
 
+        .player-hand-wrapper .card:first-child { margin-left: 0; }
+        .ai-hand-container .card:first-child { margin-left: 0; }
+
         .card:hover {
-            transform: translateY(-15px);
+            transform: translateY(-20px);
             z-index: 10;
         }
 
@@ -165,8 +244,8 @@
             to { transform: translateY(-20vh) scale(0.8); opacity: 0; filter: brightness(2); }
         }
 
-        /* Music Manager UI */
-        #music-manager {
+        /* Music & Actions UI */
+        #top-ui {
             position: absolute;
             top: 15px;
             right: 15px;
@@ -175,58 +254,113 @@
             z-index: 5;
         }
 
+        #action-ui {
+            position: absolute;
+            bottom: 35vh;
+            right: 5%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 5;
+        }
+
         .small-btn {
             padding: 8px 15px;
             font-size: 0.9rem;
             border: 1px solid rgba(255,255,255,0.3);
+            background: #000;
         }
+
     </style>
 </head>
 <body>
 
     <canvas id="emberCanvas"></canvas>
 
-    <div id="main-menu">
+    <div id="interaction-overlay">
+        Click Anywhere to Enter
+    </div>
+
+    <div id="main-menu" class="screen" style="display: none;">
         <h1>Victorian Rummy</h1>
         <button class="souls-btn" id="start-btn">Begin Journey</button>
     </div>
 
+    <div id="tutorial-screen" class="screen" style="display: none;">
+        <h1>How to Survive</h1>
+        <div id="tutorial-content">
+            <h2>The Rules of Rummy</h2>
+            <ul>
+                <li><strong>Objective:</strong> Meld all 10 cards into valid Sets and Sequences.</li>
+                <li><strong>Sequences (Runs):</strong> 3 or more consecutive cards of the <em>same suit</em> (e.g., 4♠, 5♠, 6♠).</li>
+                <li><strong>Sets:</strong> 3 or 4 cards of the <em>same rank</em> but different suits (e.g., 7♥, 7♦, 7♣).</li>
+                <li><strong>Jokers (j.jpg):</strong> Wildcards that can substitute for any missing card in a meld.</li>
+                <li><strong>Turn Phase:</strong> First, Draw a card from the Deck or Discard pile. Then, Discard one card from your hand.</li>
+                <li><strong>Winning:</strong> When all your cards form valid melds, click <strong>DECLARE</strong>.</li>
+            </ul>
+        </div>
+        <button class="souls-btn" id="understood-btn">I Understand</button>
+    </div>
+
+    <div id="win-screen" class="screen" style="display: none; z-index: 100;">
+        <h1 style="color: #ffd700; text-shadow: 0 0 20px #ff8c00;">VICTORY ACHIEVED</h1>
+        <p style="margin-bottom: 30px; font-size: 1.2rem;">Your mind has conquered the darkness.</p>
+        <button class="souls-btn" onclick="location.reload()">Return to Hearth</button>
+    </div>
+
+    <div id="lose-screen" class="screen" style="display: none; z-index: 100;">
+        <h1 style="color: #ff3333; text-shadow: 0 0 20px #aa0000;">YOU DIED</h1>
+        <p style="margin-bottom: 30px; font-size: 1.2rem;">The opponent declared their hand before you.</p>
+        <button class="souls-btn" onclick="location.reload()">Resurrect</button>
+    </div>
+
     <div id="game-area">
-        <div id="music-manager">
+        <div id="top-ui">
             <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
+        </div>
+
+        <div id="action-ui">
+            <button class="souls-btn small-btn" id="sort-btn">Sort Cards</button>
+            <button class="souls-btn small-btn" id="declare-btn" style="color: #ffd700; border-color: #ffd700;">Declare</button>
         </div>
 
         <div id="game-status">Draw a card</div>
 
-        <div class="hand" id="ai-hand"></div>
+        <div class="ai-hand-container">
+            <div class="hand" id="ai-hand"></div>
+        </div>
 
         <div id="table-center">
             <div class="card" id="draw-deck" style="background-image: url('back.png');"></div>
             <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0;"></div>
         </div>
 
-        <div class="hand" id="player-hand"></div>
+        <div class="player-hand-wrapper">
+            <div class="hand" id="player-hand"></div>
+        </div>
     </div>
 
     <script>
+        // Included 'j.jpg' (Jokers x 2)
         const cardNames = [
             'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
             'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
             'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
-            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg'
+            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg',
+            'j.jpg', 'j.jpg'
         ];
 
         // --- AUDIO MANAGER ---
         const sfxPlay = new Audio('play.mp3');
         sfxPlay.volume = 0.8;
 
-        // Equalized Volume Settings
         const MASTER_VOLUME = 0.5;
 
-        const menuMusic = new Audio('winter.mp3');
+        const menuMusic = new Audio('menumusic.mp3');
         menuMusic.loop = true;
         menuMusic.volume = MASTER_VOLUME;
 
+        // In-game tracks
         const track1 = new Audio('menumusic.mp3'); track1.volume = MASTER_VOLUME;
         const track2 = new Audio('winter.mp3');    track2.volume = MASTER_VOLUME;
         const track3 = new Audio('summer.mp3');    track3.volume = MASTER_VOLUME;
@@ -234,28 +368,65 @@
         const inGamePlaylist = [track1, track2, track3];
         let currentSongIndex = 0;
 
+        // Bypassing Auto-play restrictions
+        document.getElementById('interaction-overlay').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.getElementById('main-menu').style.display = 'flex';
+            
+            // Try to play menu music now that user interacted
+            let playPromise = menuMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.log("Menu audio failed:", error));
+            }
+        });
+
+        // Loop through playlist
         track1.addEventListener('ended', playNextSong);
         track2.addEventListener('ended', playNextSong);
         track3.addEventListener('ended', playNextSong);
 
         function playNextSong() {
-            // Stop current
             inGamePlaylist[currentSongIndex].pause();
             inGamePlaylist[currentSongIndex].currentTime = 0;
-            // Move to next
+            
             currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
-            // Play next
-            inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
+            
+            let playPromise = inGamePlaylist[currentSongIndex].play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.log("Skip track error:", error));
+            }
         }
 
         document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
 
-        // Auto-play menu
-        document.body.addEventListener('click', () => {
-            if(document.getElementById('main-menu').style.display !== 'none' && menuMusic.paused) {
-                menuMusic.play().catch(e => console.log(e));
+        // --- NAVIGATION LOGIC ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('main-menu').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('main-menu').style.display = 'none';
+                let tut = document.getElementById('tutorial-screen');
+                tut.style.display = 'flex';
+                setTimeout(() => tut.style.opacity = '1', 50);
+            }, 1000);
+        });
+
+        document.getElementById('understood-btn').addEventListener('click', () => {
+            menuMusic.pause();
+            menuMusic.currentTime = 0;
+            
+            // Start in-game music
+            let playPromise = inGamePlaylist[0].play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.log("In-game audio failed:", e));
             }
-        }, {once: true});
+
+            document.getElementById('tutorial-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('tutorial-screen').style.display = 'none';
+                document.getElementById('game-area').style.display = 'flex';
+                initializeGame();
+            }, 1000);
+        });
 
 
         // --- RUMMY GAME STATE LOGIC ---
@@ -264,23 +435,8 @@
         let aiHand = [];
         let discardPile = [];
         
-        // States: 'PLAYER_DRAW', 'PLAYER_DISCARD', 'AI_TURN'
         let gameState = 'PLAYER_DRAW'; 
         const statusEl = document.getElementById('game-status');
-
-        document.getElementById('start-btn').addEventListener('click', () => {
-            menuMusic.pause();
-            menuMusic.currentTime = 0;
-            inGamePlaylist[0].play().catch(e => console.log(e));
-
-            const menu = document.getElementById('main-menu');
-            menu.style.opacity = '0';
-            setTimeout(() => {
-                menu.style.display = 'none';
-                document.getElementById('game-area').style.display = 'flex';
-                initializeGame();
-            }, 1500);
-        });
 
         function initializeGame() {
             deck = [...cardNames].sort(() => Math.random() - 0.5);
@@ -298,17 +454,23 @@
                     // AI Card
                     let aiCard = document.createElement('div');
                     aiCard.className = 'card deal-anim';
-                    aiCard.style.marginLeft = '-40px';
                     aiHandEl.appendChild(aiCard);
-                    aiHand.push('hidden'); // Placeholder for AI logic
-                    sfxPlay.cloneNode().play();
+                    aiHand.push('hidden'); 
+
+                    // Play SFX safely
+                    let sfx = sfxPlay.cloneNode();
+                    sfx.volume = 0.5;
+                    sfx.play().catch(e=>{});
 
                     // Player Card
                     let pCardStr = deck.pop();
                     playerHand.push(pCardStr);
-                    let pCardEl = createPlayerCard(pCardStr);
-                    pHandEl.appendChild(pCardEl);
-                    sfxPlay.cloneNode().play();
+                    renderPlayerHand(); // Re-render to keep sorted or just append
+                    
+                    sfx = sfxPlay.cloneNode();
+                    sfx.volume = 0.5;
+                    sfx.play().catch(e=>{});
+                    
                 }, i * 200);
             }
 
@@ -317,35 +479,67 @@
                 let firstDiscard = deck.pop();
                 discardPile.push(firstDiscard);
                 updateDiscardUI();
+                autoSortHand(); // Organize initially
                 setGameState('PLAYER_DRAW');
             }, 2200);
         }
 
-        function createPlayerCard(cardName) {
-            let el = document.createElement('div');
-            el.className = 'card deal-anim';
-            el.style.backgroundImage = `url('${cardName}')`;
-            el.style.marginLeft = '-40px';
-            el.dataset.card = cardName;
-            
-            el.addEventListener('click', function() {
-                if(gameState !== 'PLAYER_DISCARD') return;
-                
-                // Discard logic
-                playerHand = playerHand.filter(c => c !== cardName);
-                discardPile.push(cardName);
-                
-                this.classList.add('throw-anim');
-                sfxPlay.cloneNode().play();
-                
-                setTimeout(() => {
-                    this.remove();
-                    updateDiscardUI();
-                    setGameState('AI_TURN');
-                    setTimeout(aiTurn, 1000);
-                }, 300);
+        // --- SORTING LOGIC ---
+        function getCardValue(cardStr) {
+            if (cardStr === 'j.jpg') return 100; // Jokers at the end
+            let rank = cardStr.replace('.jpg', '').replace('.png', '').substring(1);
+            if (rank === 'a') return 1;
+            if (rank === 'j') return 11;
+            if (rank === 'q') return 12;
+            if (rank === 'k') return 13;
+            return parseInt(rank);
+        }
+
+        function getCardSuit(cardStr) {
+            if (cardStr === 'j.jpg') return 'z'; // Jokers last
+            return cardStr[0]; // 's', 'c', 'h', 'd'
+        }
+
+        function autoSortHand() {
+            playerHand.sort((a, b) => {
+                let suitA = getCardSuit(a);
+                let suitB = getCardSuit(b);
+                if (suitA !== suitB) return suitA.localeCompare(suitB);
+                return getCardValue(a) - getCardValue(b);
             });
-            return el;
+            renderPlayerHand();
+        }
+
+        document.getElementById('sort-btn').addEventListener('click', autoSortHand);
+
+        function renderPlayerHand() {
+            const pHandEl = document.getElementById('player-hand');
+            pHandEl.innerHTML = '';
+            playerHand.forEach(cardStr => {
+                let el = document.createElement('div');
+                el.className = 'card';
+                el.style.backgroundImage = `url('${cardStr}')`;
+                el.dataset.card = cardStr;
+                
+                el.addEventListener('click', function() {
+                    if(gameState !== 'PLAYER_DISCARD') return;
+                    
+                    playerHand = playerHand.filter(c => c !== cardStr);
+                    discardPile.push(cardStr);
+                    
+                    this.classList.add('throw-anim');
+                    let sfx = sfxPlay.cloneNode();
+                    sfx.play().catch(e=>{});
+                    
+                    setTimeout(() => {
+                        autoSortHand(); // Re-render hand without the discarded card
+                        updateDiscardUI();
+                        setGameState('AI_TURN');
+                        setTimeout(aiTurn, 1000);
+                    }, 300);
+                });
+                pHandEl.appendChild(el);
+            });
         }
 
         function updateDiscardUI() {
@@ -366,131 +560,4 @@
             if(state === 'PLAYER_DRAW') {
                 statusEl.innerText = "Draw from Deck or Discard";
                 drawDeck.classList.add('highlight');
-                if(discardPile.length > 0) discardEl.classList.add('highlight');
-            } else if (state === 'PLAYER_DISCARD') {
-                statusEl.innerText = "Discard a card";
-                drawDeck.classList.remove('highlight');
-                discardEl.classList.remove('highlight');
-            } else {
-                statusEl.innerText = "Opponent's Turn";
-                drawDeck.classList.remove('highlight');
-                discardEl.classList.remove('highlight');
-            }
-        }
-
-        // --- DRAWING ACTIONS ---
-        document.getElementById('draw-deck').addEventListener('click', () => {
-            if(gameState !== 'PLAYER_DRAW' || deck.length === 0) return;
-            sfxPlay.cloneNode().play();
-            
-            let drawnCard = deck.pop();
-            playerHand.push(drawnCard);
-            document.getElementById('player-hand').appendChild(createPlayerCard(drawnCard));
-            
-            setGameState('PLAYER_DISCARD');
-        });
-
-        document.getElementById('discard-pile').addEventListener('click', () => {
-            if(gameState !== 'PLAYER_DRAW' || discardPile.length === 0) return;
-            sfxPlay.cloneNode().play();
-            
-            let pickedCard = discardPile.pop();
-            playerHand.push(pickedCard);
-            document.getElementById('player-hand').appendChild(createPlayerCard(pickedCard));
-            updateDiscardUI();
-
-            setGameState('PLAYER_DISCARD');
-        });
-
-        // --- AI LOGIC (SKELETON) ---
-        function aiTurn() {
-            // 1. AI Draws (from deck for now)
-            if(deck.length > 0) {
-                deck.pop(); 
-                sfxPlay.cloneNode().play();
-                const aiHandEl = document.getElementById('ai-hand');
-                let newAiCard = document.createElement('div');
-                newAiCard.className = 'card deal-anim';
-                newAiCard.style.marginLeft = '-40px';
-                aiHandEl.appendChild(newAiCard);
-                
-                // 2. AI Discards
-                setTimeout(() => {
-                    if(aiHandEl.children.length > 0) {
-                        let cardToThrow = aiHandEl.lastChild;
-                        cardToThrow.classList.add('throw-anim');
-                        sfxPlay.cloneNode().play();
-                        
-                        // Fake a discard card since AI doesn't know its hand yet
-                        let randomDiscard = cardNames[Math.floor(Math.random() * cardNames.length)];
-                        discardPile.push(randomDiscard);
-                        
-                        setTimeout(() => {
-                            cardToThrow.remove();
-                            updateDiscardUI();
-                            setGameState('PLAYER_DRAW');
-                        }, 300);
-                    }
-                }, 1000);
-            }
-        }
-
-        // --- DARK SOULS EMBERS ---
-        const canvas = document.getElementById('emberCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let embersArray = [];
-        class Ember {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 100;
-                this.size = Math.random() * 3 + 0.5; // Smaller
-                this.speedY = Math.random() * 1.5 + 0.5; // Slower
-                this.speedX = Math.random() * 1 - 0.5;
-                this.color = `rgba(255, ${Math.random() * 100 + 100}, 50, ${Math.random() * 0.8 + 0.2})`; // Orange/White
-            }
-            update() {
-                this.y -= this.speedY;
-                this.x += this.speedX;
-                if (this.size > 0.05) this.size -= 0.01;
-                if (this.y < 0 || this.size <= 0.05) {
-                    this.x = Math.random() * canvas.width;
-                    this.y = canvas.height + 50;
-                    this.size = Math.random() * 3 + 0.5;
-                }
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        function initEmbers() {
-            for (let i = 0; i < 80; i++) embersArray.push(new Ember());
-        }
-        initEmbers();
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < embersArray.length; i++) {
-                embersArray[i].update();
-                embersArray[i].draw();
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
-</body>
-</html>
+                i
