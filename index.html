@@ -37,46 +37,53 @@
             pointer-events: none;
         }
 
-        /* --- OVERLAYS & MENUS --- */
-        #interaction-overlay {
+        /* --- MENUS & OVERLAYS --- */
+        .overlay-screen {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 50;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
-            cursor: pointer;
-            letter-spacing: 2px;
-            animation: pulseText 2s infinite;
-        }
-
-        @keyframes pulseText {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; text-shadow: 0 0 15px #fff; }
-            100% { opacity: 0.5; }
-        }
-
-        .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
+            background: radial-gradient(circle, rgba(20,20,20,0.95) 0%, rgba(0,0,0,1) 100%);
             z-index: 10;
             transition: opacity 1s ease-in-out;
+            padding: 20px;
+            text-align: center;
         }
 
-        h1 {
+        .overlay-screen h1 {
             font-size: 3.5rem;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
-            margin-bottom: 40px;
-            text-align: center;
+            margin-bottom: 20px;
             letter-spacing: 4px;
             text-transform: uppercase;
+        }
+
+        .overlay-screen h2 {
+            font-size: 2rem;
+            color: #d4af37; /* Gold accent */
+            margin-bottom: 15px;
+        }
+
+        .tutorial-text {
+            max-width: 600px;
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-align: left;
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .tutorial-text ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
         }
 
         .souls-btn {
@@ -91,7 +98,6 @@
             letter-spacing: 2px;
             text-shadow: 0 0 8px rgba(255,255,255,0.5);
             transition: all 0.3s ease;
-            margin: 10px;
         }
 
         .souls-btn:hover {
@@ -104,19 +110,9 @@
             transform: scale(0.98);
         }
 
-        /* --- TUTORIAL --- */
-        #tutorial-content {
-            max-width: 600px;
-            text-align: left;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.7);
-            padding: 30px;
-            border: 1px solid #333;
-            box-shadow: 0 0 20px rgba(0,0,0,1);
-        }
-        #tutorial-content h2 { margin-bottom: 20px; text-align: center; border-bottom: 1px solid #555; padding-bottom: 10px;}
-        #tutorial-content ul { margin-left: 20px; line-height: 1.8; font-family: sans-serif; font-size: 1.1rem; }
-        #tutorial-content li { margin-bottom: 10px; }
+        /* End Screens specific colors */
+        #win-screen h1 { color: #d4af37; text-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
+        #lose-screen h1 { color: #8b0000; text-shadow: 0 0 20px rgba(139, 0, 0, 0.8); }
 
         /* --- GAME AREA --- */
         #game-area {
@@ -125,7 +121,7 @@
             height: 100%;
             flex-direction: column;
             justify-content: space-between;
-            padding: 20px 0;
+            padding: 20px;
             position: relative;
         }
 
@@ -139,89 +135,83 @@
             z-index: 2;
             pointer-events: none;
             opacity: 0.8;
-            text-align: center;
         }
 
-        /* Top Hand (AI) */
-        .ai-hand-container {
+        /* Top / AI Hand */
+        .hand {
             display: flex;
             justify-content: center;
             height: 25vh;
-            align-items: flex-start;
-        }
-        
-        .hand {
-            display: flex;
             align-items: center;
-            gap: -40px; 
+            gap: -35px; 
         }
 
-        /* Center Table */
         #table-center {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 40px;
+            gap: 30px;
             height: 30vh;
         }
 
-        /* Bottom Hand (Player) - Horizontally Scrollable */
-        .player-hand-wrapper {
-            width: 90%;
-            margin: 0 auto;
+        /* Bottom / Player Hand with Slider Strip */
+        #player-hand-wrapper {
+            width: 100%;
+            height: 30vh;
+            display: flex;
+            align-items: center;
             overflow-x: auto;
             overflow-y: hidden;
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-end;
-            height: 32vh;
-            padding-bottom: 15px; /* Space for scrollbar */
-            padding-top: 20px;
+            padding: 10px 0;
+            /* Scrollbar background creates the "black strip" effect */
+            background: rgba(10, 10, 10, 0.6); 
+            border-top: 1px solid #222;
+            border-bottom: 1px solid #222;
         }
 
-        /* Black Strip Scrollbar */
-        .player-hand-wrapper::-webkit-scrollbar {
+        /* Custom Black Strip Scrollbar */
+        #player-hand-wrapper::-webkit-scrollbar {
             height: 14px;
-            background-color: #000000;
-            border: 1px solid #222;
+            background: #050505; 
         }
-        .player-hand-wrapper::-webkit-scrollbar-thumb {
-            background-color: #333;
-            border-radius: 0;
+        #player-hand-wrapper::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 0px;
             border: 1px solid #555;
         }
-        .player-hand-wrapper::-webkit-scrollbar-thumb:hover {
-            background-color: #555;
+        #player-hand-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
-        .player-hand-wrapper .hand {
-            /* Keep cards tight, but allow stretching container */
-            padding: 0 20px;
-            min-width: min-content; 
+        #player-hand {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 20px; /* Padding to ensure first/last cards aren't cut off */
+            min-width: max-content; /* Allows container to grow based on cards */
+            gap: -20px; /* Tighter overlap */
         }
 
         /* Bigger, borderless cards */
         .card {
-            width: 110px; 
-            height: 160px;
+            width: 20vw; 
+            max-width: 120px;
+            height: auto;
+            aspect-ratio: 2.5 / 3.5;
             border-radius: 6px;
             border: none;
             box-shadow: 0 5px 15px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.1);
             background-size: cover;
             background-position: center;
             background-image: url('back.png');
-            transition: transform 0.3s, filter 0.3s, margin 0.3s;
+            transition: transform 0.3s, filter 0.3s;
             position: relative;
             cursor: pointer;
-            flex-shrink: 0;
-            margin-left: -35px; /* Overlap */
+            flex-shrink: 0; /* Prevents cards from squishing in the flex slider */
         }
 
-        .player-hand-wrapper .card:first-child { margin-left: 0; }
-        .ai-hand-container .card:first-child { margin-left: 0; }
-
         .card:hover {
-            transform: translateY(-20px);
+            transform: translateY(-15px);
             z-index: 10;
         }
 
@@ -244,110 +234,97 @@
             to { transform: translateY(-20vh) scale(0.8); opacity: 0; filter: brightness(2); }
         }
 
-        /* Music & Actions UI */
+        /* UI Menus (Top UI) */
         #top-ui {
             position: absolute;
             top: 15px;
+            left: 15px;
             right: 15px;
             display: flex;
-            gap: 15px;
+            justify-content: space-between;
             z-index: 5;
         }
 
-        #action-ui {
-            position: absolute;
-            bottom: 35vh;
-            right: 5%;
+        .ui-group {
             display: flex;
-            flex-direction: column;
             gap: 10px;
-            z-index: 5;
         }
 
         .small-btn {
             padding: 8px 15px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             border: 1px solid rgba(255,255,255,0.3);
-            background: #000;
+            background: rgba(0,0,0,0.7);
         }
-
     </style>
 </head>
 <body>
 
     <canvas id="emberCanvas"></canvas>
 
-    <div id="interaction-overlay">
-        Click Anywhere to Enter
-    </div>
-
-    <div id="main-menu" class="screen" style="display: none;">
+    <div id="main-menu" class="overlay-screen">
         <h1>Victorian Rummy</h1>
-        <button class="souls-btn" id="start-btn">Begin Journey</button>
+        <button class="souls-btn" id="start-btn">Read Rules</button>
     </div>
 
-    <div id="tutorial-screen" class="screen" style="display: none;">
-        <h1>How to Survive</h1>
-        <div id="tutorial-content">
-            <h2>The Rules of Rummy</h2>
+    <div id="tutorial-screen" class="overlay-screen" style="display:none;">
+        <h2>The Path to Victory</h2>
+        <div class="tutorial-text">
             <ul>
-                <li><strong>Objective:</strong> Meld all 10 cards into valid Sets and Sequences.</li>
-                <li><strong>Sequences (Runs):</strong> 3 or more consecutive cards of the <em>same suit</em> (e.g., 4♠, 5♠, 6♠).</li>
-                <li><strong>Sets:</strong> 3 or 4 cards of the <em>same rank</em> but different suits (e.g., 7♥, 7♦, 7♣).</li>
-                <li><strong>Jokers (j.jpg):</strong> Wildcards that can substitute for any missing card in a meld.</li>
-                <li><strong>Turn Phase:</strong> First, Draw a card from the Deck or Discard pile. Then, Discard one card from your hand.</li>
-                <li><strong>Winning:</strong> When all your cards form valid melds, click <strong>DECLARE</strong>.</li>
+                <li><strong>The Objective:</strong> Meld all your cards into valid Sets (3-4 cards of the same rank) or Runs (3+ cards in consecutive order of the same suit).</li>
+                <li><strong>The Turn:</strong> Draw one card from the deck or discard pile. Then, discard one card.</li>
+                <li><strong>Jokers:</strong> The Jester acts as a wild card, filling in missing pieces of your melds.</li>
+                <li><strong>Winning:</strong> When all cards in your hand are part of a meld and you discard your final deadwood, press <em>Declare Win</em> to conquer your opponent.</li>
             </ul>
         </div>
-        <button class="souls-btn" id="understood-btn">I Understand</button>
+        <button class="souls-btn" id="enter-fog-btn">Enter the Fog</button>
     </div>
 
-    <div id="win-screen" class="screen" style="display: none; z-index: 100;">
-        <h1 style="color: #ffd700; text-shadow: 0 0 20px #ff8c00;">VICTORY ACHIEVED</h1>
-        <p style="margin-bottom: 30px; font-size: 1.2rem;">Your mind has conquered the darkness.</p>
-        <button class="souls-btn" onclick="location.reload()">Return to Hearth</button>
+    <div id="win-screen" class="overlay-screen" style="display:none; z-index: 100;">
+        <h1>Victory Achieved</h1>
+        <button class="souls-btn" onclick="location.reload()">Play Again</button>
     </div>
 
-    <div id="lose-screen" class="screen" style="display: none; z-index: 100;">
-        <h1 style="color: #ff3333; text-shadow: 0 0 20px #aa0000;">YOU DIED</h1>
-        <p style="margin-bottom: 30px; font-size: 1.2rem;">The opponent declared their hand before you.</p>
+    <div id="lose-screen" class="overlay-screen" style="display:none; z-index: 100;">
+        <h1>You Died</h1>
+        <p style="margin-bottom: 20px;">The opponent declared their hand.</p>
         <button class="souls-btn" onclick="location.reload()">Resurrect</button>
     </div>
 
     <div id="game-area">
         <div id="top-ui">
-            <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
-        </div>
-
-        <div id="action-ui">
-            <button class="souls-btn small-btn" id="sort-btn">Sort Cards</button>
-            <button class="souls-btn small-btn" id="declare-btn" style="color: #ffd700; border-color: #ffd700;">Declare</button>
+            <div class="ui-group">
+                <button class="souls-btn small-btn" id="sort-suit-btn">Sort by Suit</button>
+                <button class="souls-btn small-btn" id="sort-rank-btn">Sort by Rank</button>
+                <button class="souls-btn small-btn" id="declare-win-btn" style="color:#d4af37; border-color:#d4af37;">Declare Win</button>
+            </div>
+            <div class="ui-group">
+                <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
+            </div>
         </div>
 
         <div id="game-status">Draw a card</div>
 
-        <div class="ai-hand-container">
-            <div class="hand" id="ai-hand"></div>
-        </div>
+        <div class="hand" id="ai-hand"></div>
 
         <div id="table-center">
             <div class="card" id="draw-deck" style="background-image: url('back.png');"></div>
             <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0;"></div>
         </div>
 
-        <div class="player-hand-wrapper">
-            <div class="hand" id="player-hand"></div>
+        <div id="player-hand-wrapper">
+            <div id="player-hand"></div>
         </div>
     </div>
 
     <script>
-        // Included 'j.jpg' (Jokers x 2)
+        // Included Jokers ('j.jpg') in the deck based on Rummy rules.
         const cardNames = [
             'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
             'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
             'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
             'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg',
-            'j.jpg', 'j.jpg'
+            'j.jpg', 'j.jpg' // 2 Jokers added
         ];
 
         // --- AUDIO MANAGER ---
@@ -356,69 +333,68 @@
 
         const MASTER_VOLUME = 0.5;
 
-        const menuMusic = new Audio('menumusic.mp3');
+        // Note: Make sure these files exist, or the browser will throw hidden 404 errors.
+        const menuMusic = new Audio('winter.mp3');
         menuMusic.loop = true;
         menuMusic.volume = MASTER_VOLUME;
 
-        // In-game tracks
-        const track1 = new Audio('menumusic.mp3'); track1.volume = MASTER_VOLUME;
-        const track2 = new Audio('winter.mp3');    track2.volume = MASTER_VOLUME;
-        const track3 = new Audio('summer.mp3');    track3.volume = MASTER_VOLUME;
+        const inGamePlaylist = [
+            new Audio('menumusic.mp3'),
+            new Audio('winter.mp3'),
+            new Audio('summer.mp3')
+        ];
         
-        const inGamePlaylist = [track1, track2, track3];
-        let currentSongIndex = 0;
-
-        // Bypassing Auto-play restrictions
-        document.getElementById('interaction-overlay').addEventListener('click', function() {
-            this.style.display = 'none';
-            document.getElementById('main-menu').style.display = 'flex';
-            
-            // Try to play menu music now that user interacted
-            let playPromise = menuMusic.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => console.log("Menu audio failed:", error));
-            }
+        inGamePlaylist.forEach(audio => {
+            audio.volume = MASTER_VOLUME;
+            audio.addEventListener('ended', playNextSong);
         });
 
-        // Loop through playlist
-        track1.addEventListener('ended', playNextSong);
-        track2.addEventListener('ended', playNextSong);
-        track3.addEventListener('ended', playNextSong);
+        let currentSongIndex = 0;
+        let isPlaying = false;
 
         function playNextSong() {
-            inGamePlaylist[currentSongIndex].pause();
-            inGamePlaylist[currentSongIndex].currentTime = 0;
-            
+            // Safely pause current
+            let currentAudio = inGamePlaylist[currentSongIndex];
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+
+            // Increment and Play Next
             currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
+            let nextAudio = inGamePlaylist[currentSongIndex];
             
-            let playPromise = inGamePlaylist[currentSongIndex].play();
+            // Promise handling to prevent "Uncaught (in promise) DOMException"
+            let playPromise = nextAudio.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => console.log("Skip track error:", error));
+                playPromise.catch(error => {
+                    console.log("Audio playback prevented or file missing:", error);
+                });
             }
         }
 
-        document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
+        document.getElementById('skip-song-btn').addEventListener('click', () => {
+            playNextSong();
+        });
 
-        // --- NAVIGATION LOGIC ---
+        // --- MENU NAVIGATION ---
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('main-menu').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('main-menu').style.display = 'none';
-                let tut = document.getElementById('tutorial-screen');
-                tut.style.display = 'flex';
-                setTimeout(() => tut.style.opacity = '1', 50);
-            }, 1000);
+                document.getElementById('tutorial-screen').style.display = 'flex';
+                document.getElementById('tutorial-screen').style.opacity = '1';
+                
+                // Attempt to play menu music if it hasn't started
+                menuMusic.play().catch(e => console.log(e));
+            }, 500);
         });
 
-        document.getElementById('understood-btn').addEventListener('click', () => {
+        document.getElementById('enter-fog-btn').addEventListener('click', () => {
             menuMusic.pause();
             menuMusic.currentTime = 0;
             
-            // Start in-game music
+            // Start game playlist safely
             let playPromise = inGamePlaylist[0].play();
-            if (playPromise !== undefined) {
-                playPromise.catch(e => console.log("In-game audio failed:", e));
-            }
+            if(playPromise !== undefined) playPromise.catch(e => console.log(e));
 
             document.getElementById('tutorial-screen').style.opacity = '0';
             setTimeout(() => {
@@ -444,9 +420,8 @@
         }
 
         function dealInitialCards() {
-            const pHandEl = document.getElementById('player-hand');
             const aiHandEl = document.getElementById('ai-hand');
-            pHandEl.innerHTML = ''; aiHandEl.innerHTML = '';
+            aiHandEl.innerHTML = '';
             playerHand = []; aiHand = [];
 
             for(let i = 0; i < 10; i++) {
@@ -454,85 +429,103 @@
                     // AI Card
                     let aiCard = document.createElement('div');
                     aiCard.className = 'card deal-anim';
+                    aiCard.style.marginLeft = '-40px';
                     aiHandEl.appendChild(aiCard);
                     aiHand.push('hidden'); 
-
-                    // Play SFX safely
-                    let sfx = sfxPlay.cloneNode();
-                    sfx.volume = 0.5;
-                    sfx.play().catch(e=>{});
+                    
+                    let sfxClone = sfxPlay.cloneNode();
+                    sfxClone.volume = 0.4;
+                    sfxClone.play().catch(e => {});
 
                     // Player Card
                     let pCardStr = deck.pop();
                     playerHand.push(pCardStr);
-                    renderPlayerHand(); // Re-render to keep sorted or just append
+                    renderPlayerHand();
                     
-                    sfx = sfxPlay.cloneNode();
-                    sfx.volume = 0.5;
-                    sfx.play().catch(e=>{});
-                    
+                    sfxClone = sfxPlay.cloneNode();
+                    sfxClone.volume = 0.4;
+                    sfxClone.play().catch(e => {});
+
                 }, i * 200);
             }
 
             // Flip first discard
             setTimeout(() => {
+                organizeHandBySuit(); // Auto-sort once dealt
                 let firstDiscard = deck.pop();
                 discardPile.push(firstDiscard);
                 updateDiscardUI();
-                autoSortHand(); // Organize initially
                 setGameState('PLAYER_DRAW');
             }, 2200);
         }
 
         // --- SORTING LOGIC ---
-        function getCardValue(cardStr) {
-            if (cardStr === 'j.jpg') return 100; // Jokers at the end
-            let rank = cardStr.replace('.jpg', '').replace('.png', '').substring(1);
-            if (rank === 'a') return 1;
-            if (rank === 'j') return 11;
-            if (rank === 'q') return 12;
-            if (rank === 'k') return 13;
-            return parseInt(rank);
+        // Helper to evaluate card values. a=1, j=11, q=12, k=13. Jokers go to end.
+        function getCardData(cardStr) {
+            if (cardStr === 'j.jpg') return { suit: 'Z', val: 14 }; // Z puts Joker at the end
+            
+            let suit = cardStr[0]; // 's', 'c', 'h', 'd'
+            let valStr = cardStr.replace('.jpg','').replace('.png','').substring(1);
+            let val = 0;
+            
+            if (valStr === 'a') val = 1;
+            else if (valStr === 'j') val = 11;
+            else if (valStr === 'q') val = 12;
+            else if (valStr === 'k') val = 13;
+            else val = parseInt(valStr);
+            
+            return { suit, val };
         }
 
-        function getCardSuit(cardStr) {
-            if (cardStr === 'j.jpg') return 'z'; // Jokers last
-            return cardStr[0]; // 's', 'c', 'h', 'd'
-        }
-
-        function autoSortHand() {
+        function organizeHandBySuit() {
             playerHand.sort((a, b) => {
-                let suitA = getCardSuit(a);
-                let suitB = getCardSuit(b);
-                if (suitA !== suitB) return suitA.localeCompare(suitB);
-                return getCardValue(a) - getCardValue(b);
+                let ca = getCardData(a);
+                let cb = getCardData(b);
+                if(ca.suit !== cb.suit) return ca.suit.localeCompare(cb.suit);
+                return ca.val - cb.val;
             });
             renderPlayerHand();
         }
 
-        document.getElementById('sort-btn').addEventListener('click', autoSortHand);
+        function organizeHandByRank() {
+            playerHand.sort((a, b) => {
+                let ca = getCardData(a);
+                let cb = getCardData(b);
+                if(ca.val !== cb.val) return ca.val - cb.val;
+                return ca.suit.localeCompare(cb.suit);
+            });
+            renderPlayerHand();
+        }
 
+        document.getElementById('sort-suit-btn').addEventListener('click', organizeHandBySuit);
+        document.getElementById('sort-rank-btn').addEventListener('click', organizeHandByRank);
+
+        // --- RENDERING ---
         function renderPlayerHand() {
             const pHandEl = document.getElementById('player-hand');
-            pHandEl.innerHTML = '';
+            pHandEl.innerHTML = ''; // Clear container
+
             playerHand.forEach(cardStr => {
                 let el = document.createElement('div');
-                el.className = 'card';
+                el.className = 'card deal-anim';
                 el.style.backgroundImage = `url('${cardStr}')`;
+                
+                // Keep negative margin for overlap, except first child handled naturally by flex gap
+                el.style.marginLeft = '-20px';
                 el.dataset.card = cardStr;
                 
                 el.addEventListener('click', function() {
                     if(gameState !== 'PLAYER_DISCARD') return;
                     
+                    // Discard logic
                     playerHand = playerHand.filter(c => c !== cardStr);
                     discardPile.push(cardStr);
                     
                     this.classList.add('throw-anim');
-                    let sfx = sfxPlay.cloneNode();
-                    sfx.play().catch(e=>{});
+                    sfxPlay.cloneNode().play().catch(e=>{});
                     
                     setTimeout(() => {
-                        autoSortHand(); // Re-render hand without the discarded card
+                        renderPlayerHand(); // Re-render to fix spacing
                         updateDiscardUI();
                         setGameState('AI_TURN');
                         setTimeout(aiTurn, 1000);
@@ -540,6 +533,11 @@
                 });
                 pHandEl.appendChild(el);
             });
+            
+            // Remove negative margin from the very first card so it doesn't get clipped
+            if(pHandEl.firstChild) {
+                pHandEl.firstChild.style.marginLeft = '0px';
+            }
         }
 
         function updateDiscardUI() {
@@ -560,4 +558,6 @@
             if(state === 'PLAYER_DRAW') {
                 statusEl.innerText = "Draw from Deck or Discard";
                 drawDeck.classList.add('highlight');
-                i
+                if(discardPile.length > 0) discardEl.classList.add('highlight');
+            } else if (state === 'PLAYER_DISCARD') {
+                statusEl.innerText = "Discard a
