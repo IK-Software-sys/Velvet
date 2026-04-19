@@ -6,7 +6,6 @@
     <title>Dark Fantasy Rummy</title>
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <style>
-        /* --- DARK SOULS / SKYRIM THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 
         * {
@@ -18,562 +17,378 @@
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #000;
+            color: #fff;
             font-family: 'Cinzel', serif;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
         }
 
-        /* Embers Background */
         canvas#emberCanvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: -1;
-            opacity: 0.8;
+            opacity: 0.6;
         }
 
-        /* --- MENUS --- */
+        /* --- UI OVERLAYS --- */
         .overlay-menu {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(20,20,20,0.95) 0%, rgba(0,0,0,1) 100%);
-            z-index: 10;
-            transition: opacity 1.5s ease-in-out;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            z-index: 20;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
-            margin-bottom: 20px;
-            text-align: center;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-        }
-
-        h2 { margin-bottom: 15px; letter-spacing: 2px; }
-
-        .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .souls-btn {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-            padding: 15px 50px;
-            font-size: 1.2rem;
-            font-family: 'Cinzel', serif;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 8px rgba(255,255,255,0.5);
-            transition: all 0.3s ease;
-        }
-
-        .souls-btn:hover {
-            border: 1px solid #ffffff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .souls-btn:active { transform: scale(0.98); }
-
-        .small-btn { padding: 8px 15px; font-size: 0.9rem; }
-
-        /* Text Input for Multiplayer */
-        .souls-input {
-            background: rgba(0,0,0,0.8);
-            border: 1px solid #555;
-            color: white;
-            padding: 10px;
-            font-family: 'Cinzel', serif;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
-
-        /* --- PANELS --- */
         .panel {
             display: none;
             flex-direction: column;
             align-items: center;
-            max-width: 600px;
+            width: 90%;
+            max-width: 500px;
             text-align: center;
-            padding: 20px;
         }
 
-        .rules-text {
-            font-family: sans-serif; /* Better readability for long text */
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            text-align: left;
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border: 1px solid #333;
-            max-height: 50vh;
-            overflow-y: auto;
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px #fff;
+            letter-spacing: 3px;
         }
 
-        /* --- GAME AREA --- */
+        .souls-btn {
+            background: rgba(40,40,40,0.6);
+            border: 1px solid #555;
+            color: #fff;
+            padding: 12px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            margin: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .souls-btn:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .souls-input {
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            font-family: 'Cinzel';
+            margin: 10px 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* --- GAMEPLAY AREA --- */
         #game-area {
             display: none;
             width: 100%;
             height: 100%;
             flex-direction: column;
             justify-content: space-between;
-            padding: 20px;
-            position: relative;
+            padding: 15px;
         }
 
         #game-status {
             position: absolute;
-            top: 40%;
-            left: 50%;
+            top: 40%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            text-shadow: 0 0 10px rgba(255,255,255,0.8);
-            z-index: 2;
+            font-size: 1.3rem;
             pointer-events: none;
+            text-shadow: 0 0 10px #fff;
         }
 
-        /* Hand Layouts */
         .hand {
             display: flex;
-            height: 28vh;
+            height: 25vh;
             align-items: center;
+            gap: -20px;
         }
 
-        #ai-hand {
-            justify-content: center;
-            gap: -35px;
-        }
-
-        /* Player Hand - Horizontal Scrolling */
         #player-hand-container {
             width: 100%;
-            display: flex;
-            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            border-top: 2px solid #222; /* The "Black Strip" */
+            overflow-x: auto;
+            padding: 15px 0;
         }
 
         #player-hand {
-            justify-content: flex-start;
-            gap: -25px;
-            max-width: 90vw;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            padding: 20px 10px 10px 10px; /* Padding for hover effect */
+            display: flex;
+            gap: 5px;
+            padding-left: 20px;
         }
 
-        /* The Black Strip Scrollbar */
-        #player-hand::-webkit-scrollbar {
-            height: 14px;
-            background: #000000; /* Black strip */
-            border: 1px solid #222;
+        /* Scrollbar Styling */
+        #player-hand-container::-webkit-scrollbar { height: 8px; }
+        #player-hand-container::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+        .card {
+            width: 90px;
+            aspect-ratio: 2.5/3.5;
+            background-size: cover;
+            border-radius: 5px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 2px 2px 10px #000;
         }
-        #player-hand::-webkit-scrollbar-thumb {
-            background: #444; 
-            border-radius: 2px;
-        }
+
+        .card:hover { transform: translateY(-15px); }
 
         #table-center {
             display: flex;
             justify-content: center;
+            gap: 20px;
             align-items: center;
-            gap: 30px;
-            height: 35vh;
         }
 
-        /* Cards */
-        .card {
-            width: 20vw; 
-            min-width: 90px;
-            max-width: 110px;
-            aspect-ratio: 2.5 / 3.5;
-            border-radius: 6px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.1);
-            background-size: cover;
-            background-position: center;
-            background-color: #111; /* Fallback */
-            transition: transform 0.3s, filter 0.3s, margin 0.3s;
-            position: relative;
-            cursor: pointer;
-            flex-shrink: 0; /* Prevents squishing in scroll container */
-        }
+        .highlight { outline: 2px solid #fff; box-shadow: 0 0 15px #fff; }
 
-        #player-hand .card:hover {
-            transform: translateY(-20px);
-            z-index: 10;
-            margin-right: 15px; /* Spreads out slightly when hovered */
-        }
-
-        .highlight {
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            transform: scale(1.05);
-        }
-
-        /* Animations */
-        .deal-anim { animation: dealCard 0.4s ease-out forwards; }
-        .throw-anim { animation: throwCard 0.3s ease-in forwards; }
-
-        @keyframes dealCard {
-            from { transform: translateY(-50vh) scale(0.5); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes throwCard {
-            from { transform: translateY(0) scale(1); }
-            to { transform: translateY(-20vh) scale(0.8); opacity: 0; filter: brightness(2); }
-        }
-
-        /* UI Overlays */
-        #music-manager {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 10px;
-            z-index: 5;
-        }
-
-        #organize-btn {
-            position: absolute;
-            bottom: 30vh;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
+        .rules-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            text-align: left;
+            font-size: 0.9rem;
+            max-height: 250px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="emberCanvas"></canvas>
+<canvas id="emberCanvas"></canvas>
 
-    <div id="main-menu" class="overlay-menu">
-        
-        <div id="home-panel" class="panel" style="display: flex;">
-            <h1>Victorian Rummy</h1>
-            <div class="menu-buttons">
-                <button class="souls-btn" onclick="showPanel('tutorial-panel')">How to Play</button>
-                <button class="souls-btn" onclick="startOfflineGame()">Begin Solo Journey</button>
-                <button class="souls-btn" onclick="showPanel('multiplayer-panel')">Play Online vs Friend</button>
-            </div>
-        </div>
-
-        <div id="tutorial-panel" class="panel">
-            <h2>The Rules of Engagement</h2>
-            <div class="rules-text">
-                <p><strong>Objective:</strong> Form your cards into valid "Melds" (Sets or Runs) and empty your hand before your opponent.</p><br>
-                <p><strong>Sets:</strong> 3 or 4 cards of the same rank, but different suits (e.g., 7♠, 7♥, 7♦).</p>
-                <p><strong>Runs:</strong> 3 or more consecutive cards of the exact same suit (e.g., 4♣, 5♣, 6♣).</p><br>
-                <p><strong>Jokers:</strong> Wildcards that can substitute for any card to complete a meld.</p><br>
-                <p><strong>Turn Flow:</strong><br>
-                1. Draw a card from the Deck or the Discard Pile.<br>
-                2. (Optional) Form melds.<br>
-                3. Discard one card to end your turn.</p>
-            </div>
-            <button class="souls-btn" onclick="showPanel('home-panel')">Return</button>
-        </div>
-
-        <div id="multiplayer-panel" class="panel">
-            <h2>Online Multiplayer</h2>
-            <p style="margin-bottom: 10px;">Your Lobby ID:</p>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
-                <input type="text" class="souls-input" id="my-id" readonly value="Connecting...">
-                <button class="souls-btn small-btn" onclick="copyId()">Copy</button>
-            </div>
-            
-            <p style="margin-bottom: 10px;">Join a Friend:</p>
-            <input type="text" class="souls-input" id="join-id" placeholder="Enter Friend's ID">
-            <button class="souls-btn" onclick="joinGame()">Connect & Play</button>
-            <br>
-            <button class="souls-btn small-btn" onclick="showPanel('home-panel')">Back</button>
-        </div>
+<div id="main-menu" class="overlay-menu">
+    <div id="home-panel" class="panel" style="display: flex;">
+        <h1>Dark Rummy</h1>
+        <button class="souls-btn" onclick="openPanel('tutorial-panel')">Rules</button>
+        <button class="souls-btn" onclick="startOffline()">Solo Play</button>
+        <button class="souls-btn" onclick="openPanel('multi-panel')">Online Battle</button>
     </div>
 
-    <div id="game-area">
-        <div id="music-manager">
-            <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
+    <div id="tutorial-panel" class="panel">
+        <h2>The Laws</h2>
+        <div class="rules-box">
+            <p>• <b>Objective:</b> Form Melds (3+ cards of same rank or 3+ sequence in same suit).</p><br>
+            <p>• <b>Jokers:</b> (j.jpg) are wild and fit any meld.</p><br>
+            <p>• <b>The Turn:</b> Draw from deck/discard, then discard one card.</p>
         </div>
-
-        <div id="game-status">Draw a card</div>
-
-        <div class="hand" id="ai-hand"></div>
-
-        <div id="table-center">
-            <div class="card" id="draw-deck" style="background-image: url('back.png');"></div>
-            <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0;"></div>
-        </div>
-
-        <button class="souls-btn small-btn" id="organize-btn" onclick="organizeHand()">Organize Hand</button>
-
-        <div id="player-hand-container">
-            <div id="player-hand"></div>
-        </div>
+        <button class="souls-btn" onclick="openPanel('home-panel')">Back</button>
     </div>
 
-    <script>
-        // --- DECK DATA ---
-        // Added Jokers (j.jpg) twice as per standard deck
-        const cardNames = [
-            'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
-            'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
-            'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
-            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg',
-            'j.jpg', 'j.jpg'
-        ];
+    <div id="multi-panel" class="panel">
+        <h2>Multiplayer</h2>
+        <p>Your ID:</p>
+        <input type="text" id="my-id" class="souls-input" readonly value="Connecting...">
+        <p>Friend's ID:</p>
+        <input type="text" id="join-id" class="souls-input" placeholder="Paste ID here">
+        <button class="souls-btn" onclick="connectToFriend()">Join Game</button>
+        <button class="souls-btn" onclick="openPanel('home-panel')">Back</button>
+    </div>
+</div>
 
-        // --- AUDIO MANAGER ---
-        let audioInitialized = false;
-        const sfxPlay = new Audio('play.mp3');
-        sfxPlay.volume = 0.8;
+<div id="game-area">
+    <div id="game-status">Loading...</div>
+    
+    <div id="music-controls" style="position:absolute; top:10px; right:10px; z-index:30;">
+        <button class="souls-btn" style="padding:5px 10px; font-size:0.7rem;" onclick="skipTrack()">Skip Track</button>
+    </div>
 
-        const MASTER_VOLUME = 0.5;
-        // Fixed menu music file name based on your request
-        const menuMusic = new Audio('menumusic.mp3'); 
-        menuMusic.loop = true;
-        menuMusic.volume = MASTER_VOLUME;
+    <div class="hand" id="ai-hand" style="justify-content:center;"></div>
 
-        const track1 = new Audio('menumusic.mp3'); track1.volume = MASTER_VOLUME;
-        const track2 = new Audio('winter.mp3');    track2.volume = MASTER_VOLUME;
-        const track3 = new Audio('summer.mp3');    track3.volume = MASTER_VOLUME;
+    <div id="table-center">
+        <div class="card" id="draw-deck" style="background-image:url('back.png')"></div>
+        <div class="card" id="discard-pile" style="background-image:url('back.png'); opacity:0;"></div>
+    </div>
+
+    <button class="souls-btn" style="margin: 0 auto; display: block;" onclick="organizeHand()">Organize Hand</button>
+
+    <div id="player-hand-container">
+        <div id="player-hand"></div>
+    </div>
+</div>
+
+<script>
+    // --- DATA ---
+    const cards = [
+        'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
+        'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
+        'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
+        'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg',
+        'j.jpg', 'j.jpg'
+    ];
+
+    let playerHand = [];
+    let deck = [];
+    let discardPile = [];
+    let gameState = 'IDLE';
+
+    // --- AUDIO ---
+    const tracks = ['menumusic.mp3', 'winter.mp3', 'summer.mp3'];
+    let currentTrackIdx = 0;
+    let bgm = new Audio();
+
+    function playBGM(idx) {
+        bgm.pause();
+        bgm.src = tracks[idx];
+        bgm.loop = true;
+        bgm.play().catch(e => console.log("Waiting for user interaction"));
+    }
+
+    function skipTrack() {
+        currentTrackIdx = (currentTrackIdx + 1) % tracks.length;
+        playBGM(currentTrackIdx);
+    }
+
+    // --- NAVIGATION ---
+    function openPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    // --- GAME ENGINE ---
+    function startOffline() {
+        playBGM(0);
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
         
-        const inGamePlaylist = [track1, track2, track3];
-        let currentSongIndex = 0;
+        deck = [...cards].sort(() => Math.random() - 0.5);
+        playerHand = deck.splice(0, 10);
+        discardPile.push(deck.pop());
+        
+        renderPlayerHand();
+        updateDiscardUI();
+        setGameState('PLAYER_DRAW');
+    }
 
-        function initAudio() {
-            if(audioInitialized) return;
-            // Play menu music on first click anywhere
-            menuMusic.play().catch(e => console.log("Audio autoplay blocked until interaction"));
-            audioInitialized = true;
-        }
-        document.body.addEventListener('click', initAudio, {once: true});
-
-        function playNextSong() {
-            inGamePlaylist[currentSongIndex].pause();
-            inGamePlaylist[currentSongIndex].currentTime = 0;
-            currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
-            inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
-        }
-
-        // Attached to the button
-        document.getElementById('skip-song-btn').addEventListener('click', () => {
-            playNextSong();
+    function renderPlayerHand() {
+        const container = document.getElementById('player-hand');
+        container.innerHTML = '';
+        playerHand.forEach(card => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.style.backgroundImage = `url('${card}')`;
+            div.onclick = () => handleCardClick(card, div);
+            container.appendChild(div);
         });
+    }
 
-
-        // --- UI NAVIGATION ---
-        function showPanel(panelId) {
-            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-            document.getElementById(panelId).style.display = 'flex';
+    function updateDiscardUI() {
+        const disc = document.getElementById('discard-pile');
+        if(discardPile.length > 0) {
+            disc.style.backgroundImage = `url('${discardPile[discardPile.length-1]}')`;
+            disc.style.opacity = '1';
         }
+    }
 
-        // --- MULTIPLAYER P2P (PEER.JS) ---
-        let peer = null;
-        let p2pConnection = null;
-        let isHost = false;
-        let isMultiplayer = false;
+    function setGameState(s) {
+        gameState = s;
+        const status = document.getElementById('game-status');
+        document.getElementById('draw-deck').classList.remove('highlight');
+        document.getElementById('discard-pile').classList.remove('highlight');
 
-        // Initialize PeerJS to get an ID
-        peer = new Peer();
-        peer.on('open', function(id) {
-            document.getElementById('my-id').value = id;
+        if(s === 'PLAYER_DRAW') {
+            status.innerText = "Your Turn: Draw";
+            document.getElementById('draw-deck').classList.add('highlight');
+            document.getElementById('discard-pile').classList.add('highlight');
+        } else if(s === 'PLAYER_DISCARD') {
+            status.innerText = "Select a Card to Discard";
+        }
+    }
+
+    // Interaction
+    document.getElementById('draw-deck').onclick = () => {
+        if(gameState !== 'PLAYER_DRAW') return;
+        playerHand.push(deck.pop());
+        renderPlayerHand();
+        setGameState('PLAYER_DISCARD');
+    };
+
+    document.getElementById('discard-pile').onclick = () => {
+        if(gameState !== 'PLAYER_DRAW' || discardPile.length === 0) return;
+        playerHand.push(discardPile.pop());
+        renderPlayerHand();
+        updateDiscardUI();
+        setGameState('PLAYER_DISCARD');
+    };
+
+    function handleCardClick(card, el) {
+        if(gameState !== 'PLAYER_DISCARD') return;
+        playerHand.splice(playerHand.indexOf(card), 1);
+        discardPile.push(card);
+        updateDiscardUI();
+        renderPlayerHand();
+        setGameState('PLAYER_DRAW'); // In solo, just loops back
+    }
+
+    function organizeHand() {
+        playerHand.sort((a,b) => {
+            if(a === 'j.jpg') return 1;
+            if(b === 'j.jpg') return -1;
+            return a.localeCompare(b);
         });
+        renderPlayerHand();
+    }
 
-        // Listen for incoming connections (You are the Host)
-        peer.on('connection', function(conn) {
-            p2pConnection = conn;
-            isHost = true;
-            isMultiplayer = true;
-            setupP2PGame();
+    // --- MULTIPLAYER ---
+    const peer = new Peer();
+    peer.on('open', id => document.getElementById('my-id').value = id);
+    
+    let conn;
+    function connectToFriend() {
+        const friendId = document.getElementById('join-id').value;
+        conn = peer.connect(friendId);
+        setupConn();
+    }
+
+    peer.on('connection', c => {
+        conn = c;
+        setupConn();
+    });
+
+    function setupConn() {
+        conn.on('open', () => {
+            alert("Connected!");
+            startOffline(); // Simplification: triggers game view
         });
+    }
 
-        function copyId() {
-            const idField = document.getElementById('my-id');
-            idField.select();
-            document.execCommand("copy");
-            alert("Lobby ID Copied!");
-        }
-
-        function joinGame() {
-            const friendId = document.getElementById('join-id').value;
-            if(!friendId) return alert("Enter an ID");
-            
-            p2pConnection = peer.connect(friendId);
-            p2pConnection.on('open', function() {
-                isHost = false;
-                isMultiplayer = true;
-                setupP2PGame();
-            });
-        }
-
-        function setupP2PGame() {
-            // Switch UI
-            document.getElementById('main-menu').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('main-menu').style.display = 'none';
-                document.getElementById('game-area').style.display = 'flex';
-                
-                menuMusic.pause();
-                inGamePlaylist[0].play().catch(e=>console.log(e));
-
-                if(isHost) {
-                    // Host generates deck and sends state
-                    deck = [...cardNames].sort(() => Math.random() - 0.5);
-                    let guestHand = deck.splice(0, 10);
-                    playerHand = deck.splice(0, 10);
-                    discardPile.push(deck.pop());
-                    
-                    p2pConnection.send({
-                        type: 'INIT',
-                        deck: deck,
-                        discard: discardPile,
-                        guestHand: guestHand
-                    });
-                    
-                    renderHands();
-                    setGameState('PLAYER_DRAW'); // Host goes first
-                }
-            }, 1000);
-
-            // Handle incoming data
-            p2pConnection.on('data', function(data) {
-                if(data.type === 'INIT') {
-                    deck = data.deck;
-                    discardPile = data.discard;
-                    playerHand = data.guestHand;
-                    // Mock AI hand just to show opponent has 10 cards
-                    aiHand = new Array(10).fill('hidden'); 
-                    renderHands();
-                    updateDiscardUI();
-                    setGameState('OPPONENT_TURN');
-                }
-                else if (data.type === 'DISCARD') {
-                    discardPile.push(data.card);
-                    updateDiscardUI();
-                    setGameState('PLAYER_DRAW');
-                }
-                else if (data.type === 'DRAW_DECK') {
-                    deck.pop();
-                }
-                else if (data.type === 'DRAW_DISCARD') {
-                    discardPile.pop();
-                    updateDiscardUI();
-                }
-            });
-        }
-
-
-        // --- RUMMY GAME STATE LOGIC ---
-        let deck = [];
-        let playerHand = [];
-        let aiHand = [];
-        let discardPile = [];
-        let gameState = 'IDLE'; 
-        const statusEl = document.getElementById('game-status');
-
-        function startOfflineGame() {
-            isMultiplayer = false;
-            menuMusic.pause();
-            inGamePlaylist[0].play().catch(e => console.log(e));
-
-            const menu = document.getElementById('main-menu');
-            menu.style.opacity = '0';
-            setTimeout(() => {
-                menu.style.display = 'none';
-                document.getElementById('game-area').style.display = 'flex';
-                initializeOfflineGame();
-            }, 1500);
-        }
-
-        function initializeOfflineGame() {
-            deck = [...cardNames].sort(() => Math.random() - 0.5);
-            playerHand = deck.splice(0, 10);
-            aiHand = deck.splice(0, 10); // Hidden for AI
-            discardPile.push(deck.pop());
-            
-            renderHands();
-            setTimeout(() => setGameState('PLAYER_DRAW'), 2000);
-        }
-
-        function renderHands() {
-            const pHandEl = document.getElementById('player-hand');
-            const aiHandEl = document.getElementById('ai-hand');
-            pHandEl.innerHTML = ''; aiHandEl.innerHTML = '';
-
-            // Opponent Hand Visuals
-            for(let i = 0; i < 10; i++) {
-                setTimeout(() => {
-                    let aiCard = document.createElement('div');
-                    aiCard.className = 'card deal-anim';
-                    aiCard.style.marginLeft = '-40px'; // overlap
-                    aiHandEl.appendChild(aiCard);
-                    playSound();
-                }, i * 150);
-            }
-
-            // Player Hand Visuals
-            playerHand.forEach((cardStr, index) => {
-                setTimeout(() => {
-                    pHandEl.appendChild(createPlayerCard(cardStr));
-                    playSound();
-                }, index * 150);
-            });
-
-            setTimeout(updateDiscardUI, 1500);
-        }
-
-        function playSound() {
-            let clone = sfxPlay.cloneNode();
-            clone.volume = 0.5;
-            clone.play().catch(()=>{});
-        }
-
-        function createPlayerCard(cardName) {
-            let el = document.createElement('div');
-            el.className = 'card deal-anim';
-            el.style.backgroundImage = `url('${cardName}')`;
-            el.dataset.card = cardName;
-            
-            el.addEventListener('click', function() {
-                if(gameState !== 'PLAYER_DISCARD') return;
-                
-                // Remove from hand array
-                const idx = playerHand.indexOf(cardName);
-                if (idx > -1) playerHand.splice(idx, 1);
-
-                discardPile.push(cardName);
-                
-                this.classList.add('throw-anim');
-                playSound();
-                
-                if(isMultiplayer) {
-                    p2pConnection.send({ type: 'DISCARD', card: cardName });
-                    setGameState('OPPONENT_TURN');
-                } else {
-                    setGameState('OPPONENT_TURN');
-                    setTimeout(aiTurn, 1000);
-                }
-
-                setTimeout(() => {
-                    this.remove();
-                    updateDiscardUI();
-                }, 300);
-            });
-            return el;
+    // --- CANVAS EMBERS ---
+    const canvas = document.getElementById('emberCanvas');
+    const ctx = canvas.getContext('2d');
+    let embers = [];
+    function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        for(let i=0; i<50; i++) embers.push({x: Math.random()*canvas.width, y: canvas.height, s: Math.random()*2, v: Math.random()*2});
+    }
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "#ff5500";
+        embers.forEach(e => {
+            e.y -= e.v;
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.s, 0, Math.PI*2); ctx.fill();
+            if(e.y < 0) e.y = canvas.height;
+        });
+        requestAnimationFrame(draw);
+    }
+    initCanvas(); draw();
+</script>
+</body>
+</html>
