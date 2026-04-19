@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dark Fantasy Rummy</title>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <style>
         /* --- DARK SOULS / SKYRIM THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -37,7 +38,7 @@
         }
 
         /* --- MENUS --- */
-        #main-menu {
+        .overlay-menu {
             position: absolute;
             top: 0;
             left: 0;
@@ -47,26 +48,35 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(20,20,20,0.9) 0%, rgba(0,0,0,1) 100%);
+            background: radial-gradient(circle, rgba(20,20,20,0.95) 0%, rgba(0,0,0,1) 100%);
             z-index: 10;
             transition: opacity 1.5s ease-in-out;
         }
 
-        #main-menu h1 {
+        h1 {
             font-size: 3.5rem;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-align: center;
             letter-spacing: 4px;
             text-transform: uppercase;
         }
 
+        h2 { margin-bottom: 15px; letter-spacing: 2px; }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
         .souls-btn {
-            background: transparent;
+            background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: #ffffff;
             padding: 15px 50px;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-family: 'Cinzel', serif;
             cursor: pointer;
             text-transform: uppercase;
@@ -78,11 +88,46 @@
         .souls-btn:hover {
             border: 1px solid #ffffff;
             box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .souls-btn:active {
-            transform: scale(0.98);
+        .souls-btn:active { transform: scale(0.98); }
+
+        .small-btn { padding: 8px 15px; font-size: 0.9rem; }
+
+        /* Text Input for Multiplayer */
+        .souls-input {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #555;
+            color: white;
+            padding: 10px;
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* --- PANELS --- */
+        .panel {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .rules-text {
+            font-family: sans-serif; /* Better readability for long text */
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border: 1px solid #333;
+            max-height: 50vh;
+            overflow-y: auto;
         }
 
         /* --- GAME AREA --- */
@@ -105,15 +150,46 @@
             text-shadow: 0 0 10px rgba(255,255,255,0.8);
             z-index: 2;
             pointer-events: none;
-            opacity: 0.8;
         }
 
+        /* Hand Layouts */
         .hand {
             display: flex;
-            justify-content: center;
             height: 28vh;
             align-items: center;
-            gap: -35px; /* Tighter overlap for bigger cards */
+        }
+
+        #ai-hand {
+            justify-content: center;
+            gap: -35px;
+        }
+
+        /* Player Hand - Horizontal Scrolling */
+        #player-hand-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #player-hand {
+            justify-content: flex-start;
+            gap: -25px;
+            max-width: 90vw;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding: 20px 10px 10px 10px; /* Padding for hover effect */
+        }
+
+        /* The Black Strip Scrollbar */
+        #player-hand::-webkit-scrollbar {
+            height: 14px;
+            background: #000000; /* Black strip */
+            border: 1px solid #222;
+        }
+        #player-hand::-webkit-scrollbar-thumb {
+            background: #444; 
+            border-radius: 2px;
         }
 
         #table-center {
@@ -124,26 +200,28 @@
             height: 35vh;
         }
 
-        /* Bigger, borderless cards */
+        /* Cards */
         .card {
-            width: 24vw; 
-            max-width: 130px;
-            height: auto;
+            width: 20vw; 
+            min-width: 90px;
+            max-width: 110px;
             aspect-ratio: 2.5 / 3.5;
             border-radius: 6px;
             border: none;
             box-shadow: 0 5px 15px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.1);
             background-size: cover;
             background-position: center;
-            background-image: url('back.png');
-            transition: transform 0.3s, filter 0.3s;
+            background-color: #111; /* Fallback */
+            transition: transform 0.3s, filter 0.3s, margin 0.3s;
             position: relative;
             cursor: pointer;
+            flex-shrink: 0; /* Prevents squishing in scroll container */
         }
 
-        .card:hover {
-            transform: translateY(-15px);
+        #player-hand .card:hover {
+            transform: translateY(-20px);
             z-index: 10;
+            margin-right: 15px; /* Spreads out slightly when hovered */
         }
 
         .highlight {
@@ -159,26 +237,27 @@
             from { transform: translateY(-50vh) scale(0.5); opacity: 0; }
             to { transform: translateY(0) scale(1); opacity: 1; }
         }
-
         @keyframes throwCard {
             from { transform: translateY(0) scale(1); }
             to { transform: translateY(-20vh) scale(0.8); opacity: 0; filter: brightness(2); }
         }
 
-        /* Music Manager UI */
+        /* UI Overlays */
         #music-manager {
             position: absolute;
             top: 15px;
             right: 15px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             z-index: 5;
         }
 
-        .small-btn {
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255,255,255,0.3);
+        #organize-btn {
+            position: absolute;
+            bottom: 30vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
         }
     </style>
 </head>
@@ -186,9 +265,46 @@
 
     <canvas id="emberCanvas"></canvas>
 
-    <div id="main-menu">
-        <h1>Victorian Rummy</h1>
-        <button class="souls-btn" id="start-btn">Begin Journey</button>
+    <div id="main-menu" class="overlay-menu">
+        
+        <div id="home-panel" class="panel" style="display: flex;">
+            <h1>Victorian Rummy</h1>
+            <div class="menu-buttons">
+                <button class="souls-btn" onclick="showPanel('tutorial-panel')">How to Play</button>
+                <button class="souls-btn" onclick="startOfflineGame()">Begin Solo Journey</button>
+                <button class="souls-btn" onclick="showPanel('multiplayer-panel')">Play Online vs Friend</button>
+            </div>
+        </div>
+
+        <div id="tutorial-panel" class="panel">
+            <h2>The Rules of Engagement</h2>
+            <div class="rules-text">
+                <p><strong>Objective:</strong> Form your cards into valid "Melds" (Sets or Runs) and empty your hand before your opponent.</p><br>
+                <p><strong>Sets:</strong> 3 or 4 cards of the same rank, but different suits (e.g., 7♠, 7♥, 7♦).</p>
+                <p><strong>Runs:</strong> 3 or more consecutive cards of the exact same suit (e.g., 4♣, 5♣, 6♣).</p><br>
+                <p><strong>Jokers:</strong> Wildcards that can substitute for any card to complete a meld.</p><br>
+                <p><strong>Turn Flow:</strong><br>
+                1. Draw a card from the Deck or the Discard Pile.<br>
+                2. (Optional) Form melds.<br>
+                3. Discard one card to end your turn.</p>
+            </div>
+            <button class="souls-btn" onclick="showPanel('home-panel')">Return</button>
+        </div>
+
+        <div id="multiplayer-panel" class="panel">
+            <h2>Online Multiplayer</h2>
+            <p style="margin-bottom: 10px;">Your Lobby ID:</p>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" class="souls-input" id="my-id" readonly value="Connecting...">
+                <button class="souls-btn small-btn" onclick="copyId()">Copy</button>
+            </div>
+            
+            <p style="margin-bottom: 10px;">Join a Friend:</p>
+            <input type="text" class="souls-input" id="join-id" placeholder="Enter Friend's ID">
+            <button class="souls-btn" onclick="joinGame()">Connect & Play</button>
+            <br>
+            <button class="souls-btn small-btn" onclick="showPanel('home-panel')">Back</button>
+        </div>
     </div>
 
     <div id="game-area">
@@ -205,25 +321,32 @@
             <div class="card" id="discard-pile" style="background-image: url('back.png'); opacity: 0;"></div>
         </div>
 
-        <div class="hand" id="player-hand"></div>
+        <button class="souls-btn small-btn" id="organize-btn" onclick="organizeHand()">Organize Hand</button>
+
+        <div id="player-hand-container">
+            <div id="player-hand"></div>
+        </div>
     </div>
 
     <script>
+        // --- DECK DATA ---
+        // Added Jokers (j.jpg) twice as per standard deck
         const cardNames = [
             'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
             'ca.jpg','c2.png','c3.png','c4.png','c5.png','c6.png','c7.png','c8.png','c9.png','c10.png','cj.jpg','cq.jpg','ck.jpg',
             'ha.jpg','h2.jpg','h3.jpg','h4.jpg','h5.jpg','h6.jpg','h7.jpg','h8.jpg','h9.jpg','h10.jpg','hj.jpg','hq.jpg','hk.jpg',
-            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg'
+            'da.jpg','d2.jpg','d3.jpg','d4.jpg','d5.jpg','d6.jpg','d7.jpg','d8.jpg','d9.jpg','d10.jpg','dj.jpg','dq.jpg','dk.jpg',
+            'j.jpg', 'j.jpg'
         ];
 
         // --- AUDIO MANAGER ---
+        let audioInitialized = false;
         const sfxPlay = new Audio('play.mp3');
         sfxPlay.volume = 0.8;
 
-        // Equalized Volume Settings
         const MASTER_VOLUME = 0.5;
-
-        const menuMusic = new Audio('winter.mp3');
+        // Fixed menu music file name based on your request
+        const menuMusic = new Audio('menumusic.mp3'); 
         menuMusic.loop = true;
         menuMusic.volume = MASTER_VOLUME;
 
@@ -234,28 +357,127 @@
         const inGamePlaylist = [track1, track2, track3];
         let currentSongIndex = 0;
 
-        track1.addEventListener('ended', playNextSong);
-        track2.addEventListener('ended', playNextSong);
-        track3.addEventListener('ended', playNextSong);
+        function initAudio() {
+            if(audioInitialized) return;
+            // Play menu music on first click anywhere
+            menuMusic.play().catch(e => console.log("Audio autoplay blocked until interaction"));
+            audioInitialized = true;
+        }
+        document.body.addEventListener('click', initAudio, {once: true});
 
         function playNextSong() {
-            // Stop current
             inGamePlaylist[currentSongIndex].pause();
             inGamePlaylist[currentSongIndex].currentTime = 0;
-            // Move to next
             currentSongIndex = (currentSongIndex + 1) % inGamePlaylist.length;
-            // Play next
             inGamePlaylist[currentSongIndex].play().catch(e => console.log(e));
         }
 
-        document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
+        // Attached to the button
+        document.getElementById('skip-song-btn').addEventListener('click', () => {
+            playNextSong();
+        });
 
-        // Auto-play menu
-        document.body.addEventListener('click', () => {
-            if(document.getElementById('main-menu').style.display !== 'none' && menuMusic.paused) {
-                menuMusic.play().catch(e => console.log(e));
-            }
-        }, {once: true});
+
+        // --- UI NAVIGATION ---
+        function showPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+            document.getElementById(panelId).style.display = 'flex';
+        }
+
+        // --- MULTIPLAYER P2P (PEER.JS) ---
+        let peer = null;
+        let p2pConnection = null;
+        let isHost = false;
+        let isMultiplayer = false;
+
+        // Initialize PeerJS to get an ID
+        peer = new Peer();
+        peer.on('open', function(id) {
+            document.getElementById('my-id').value = id;
+        });
+
+        // Listen for incoming connections (You are the Host)
+        peer.on('connection', function(conn) {
+            p2pConnection = conn;
+            isHost = true;
+            isMultiplayer = true;
+            setupP2PGame();
+        });
+
+        function copyId() {
+            const idField = document.getElementById('my-id');
+            idField.select();
+            document.execCommand("copy");
+            alert("Lobby ID Copied!");
+        }
+
+        function joinGame() {
+            const friendId = document.getElementById('join-id').value;
+            if(!friendId) return alert("Enter an ID");
+            
+            p2pConnection = peer.connect(friendId);
+            p2pConnection.on('open', function() {
+                isHost = false;
+                isMultiplayer = true;
+                setupP2PGame();
+            });
+        }
+
+        function setupP2PGame() {
+            // Switch UI
+            document.getElementById('main-menu').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('main-menu').style.display = 'none';
+                document.getElementById('game-area').style.display = 'flex';
+                
+                menuMusic.pause();
+                inGamePlaylist[0].play().catch(e=>console.log(e));
+
+                if(isHost) {
+                    // Host generates deck and sends state
+                    deck = [...cardNames].sort(() => Math.random() - 0.5);
+                    let guestHand = deck.splice(0, 10);
+                    playerHand = deck.splice(0, 10);
+                    discardPile.push(deck.pop());
+                    
+                    p2pConnection.send({
+                        type: 'INIT',
+                        deck: deck,
+                        discard: discardPile,
+                        guestHand: guestHand
+                    });
+                    
+                    renderHands();
+                    setGameState('PLAYER_DRAW'); // Host goes first
+                }
+            }, 1000);
+
+            // Handle incoming data
+            p2pConnection.on('data', function(data) {
+                if(data.type === 'INIT') {
+                    deck = data.deck;
+                    discardPile = data.discard;
+                    playerHand = data.guestHand;
+                    // Mock AI hand just to show opponent has 10 cards
+                    aiHand = new Array(10).fill('hidden'); 
+                    renderHands();
+                    updateDiscardUI();
+                    setGameState('OPPONENT_TURN');
+                }
+                else if (data.type === 'DISCARD') {
+                    discardPile.push(data.card);
+                    updateDiscardUI();
+                    setGameState('PLAYER_DRAW');
+                }
+                else if (data.type === 'DRAW_DECK') {
+                    deck.pop();
+                }
+                else if (data.type === 'DRAW_DISCARD') {
+                    discardPile.pop();
+                    updateDiscardUI();
+                }
+            });
+        }
 
 
         // --- RUMMY GAME STATE LOGIC ---
@@ -263,14 +485,12 @@
         let playerHand = [];
         let aiHand = [];
         let discardPile = [];
-        
-        // States: 'PLAYER_DRAW', 'PLAYER_DISCARD', 'AI_TURN'
-        let gameState = 'PLAYER_DRAW'; 
+        let gameState = 'IDLE'; 
         const statusEl = document.getElementById('game-status');
 
-        document.getElementById('start-btn').addEventListener('click', () => {
+        function startOfflineGame() {
+            isMultiplayer = false;
             menuMusic.pause();
-            menuMusic.currentTime = 0;
             inGamePlaylist[0].play().catch(e => console.log(e));
 
             const menu = document.getElementById('main-menu');
@@ -278,219 +498,82 @@
             setTimeout(() => {
                 menu.style.display = 'none';
                 document.getElementById('game-area').style.display = 'flex';
-                initializeGame();
+                initializeOfflineGame();
             }, 1500);
-        });
-
-        function initializeGame() {
-            deck = [...cardNames].sort(() => Math.random() - 0.5);
-            dealInitialCards();
         }
 
-        function dealInitialCards() {
+        function initializeOfflineGame() {
+            deck = [...cardNames].sort(() => Math.random() - 0.5);
+            playerHand = deck.splice(0, 10);
+            aiHand = deck.splice(0, 10); // Hidden for AI
+            discardPile.push(deck.pop());
+            
+            renderHands();
+            setTimeout(() => setGameState('PLAYER_DRAW'), 2000);
+        }
+
+        function renderHands() {
             const pHandEl = document.getElementById('player-hand');
             const aiHandEl = document.getElementById('ai-hand');
             pHandEl.innerHTML = ''; aiHandEl.innerHTML = '';
-            playerHand = []; aiHand = [];
 
+            // Opponent Hand Visuals
             for(let i = 0; i < 10; i++) {
                 setTimeout(() => {
-                    // AI Card
                     let aiCard = document.createElement('div');
                     aiCard.className = 'card deal-anim';
-                    aiCard.style.marginLeft = '-40px';
+                    aiCard.style.marginLeft = '-40px'; // overlap
                     aiHandEl.appendChild(aiCard);
-                    aiHand.push('hidden'); // Placeholder for AI logic
-                    sfxPlay.cloneNode().play();
-
-                    // Player Card
-                    let pCardStr = deck.pop();
-                    playerHand.push(pCardStr);
-                    let pCardEl = createPlayerCard(pCardStr);
-                    pHandEl.appendChild(pCardEl);
-                    sfxPlay.cloneNode().play();
-                }, i * 200);
+                    playSound();
+                }, i * 150);
             }
 
-            // Flip first discard
-            setTimeout(() => {
-                let firstDiscard = deck.pop();
-                discardPile.push(firstDiscard);
-                updateDiscardUI();
-                setGameState('PLAYER_DRAW');
-            }, 2200);
+            // Player Hand Visuals
+            playerHand.forEach((cardStr, index) => {
+                setTimeout(() => {
+                    pHandEl.appendChild(createPlayerCard(cardStr));
+                    playSound();
+                }, index * 150);
+            });
+
+            setTimeout(updateDiscardUI, 1500);
+        }
+
+        function playSound() {
+            let clone = sfxPlay.cloneNode();
+            clone.volume = 0.5;
+            clone.play().catch(()=>{});
         }
 
         function createPlayerCard(cardName) {
             let el = document.createElement('div');
             el.className = 'card deal-anim';
             el.style.backgroundImage = `url('${cardName}')`;
-            el.style.marginLeft = '-40px';
             el.dataset.card = cardName;
             
             el.addEventListener('click', function() {
                 if(gameState !== 'PLAYER_DISCARD') return;
                 
-                // Discard logic
-                playerHand = playerHand.filter(c => c !== cardName);
+                // Remove from hand array
+                const idx = playerHand.indexOf(cardName);
+                if (idx > -1) playerHand.splice(idx, 1);
+
                 discardPile.push(cardName);
                 
                 this.classList.add('throw-anim');
-                sfxPlay.cloneNode().play();
+                playSound();
                 
+                if(isMultiplayer) {
+                    p2pConnection.send({ type: 'DISCARD', card: cardName });
+                    setGameState('OPPONENT_TURN');
+                } else {
+                    setGameState('OPPONENT_TURN');
+                    setTimeout(aiTurn, 1000);
+                }
+
                 setTimeout(() => {
                     this.remove();
                     updateDiscardUI();
-                    setGameState('AI_TURN');
-                    setTimeout(aiTurn, 1000);
                 }, 300);
             });
             return el;
-        }
-
-        function updateDiscardUI() {
-            const discardEl = document.getElementById('discard-pile');
-            if(discardPile.length > 0) {
-                discardEl.style.backgroundImage = `url('${discardPile[discardPile.length - 1]}')`;
-                discardEl.style.opacity = '1';
-            } else {
-                discardEl.style.opacity = '0';
-            }
-        }
-
-        function setGameState(state) {
-            gameState = state;
-            const drawDeck = document.getElementById('draw-deck');
-            const discardEl = document.getElementById('discard-pile');
-
-            if(state === 'PLAYER_DRAW') {
-                statusEl.innerText = "Draw from Deck or Discard";
-                drawDeck.classList.add('highlight');
-                if(discardPile.length > 0) discardEl.classList.add('highlight');
-            } else if (state === 'PLAYER_DISCARD') {
-                statusEl.innerText = "Discard a card";
-                drawDeck.classList.remove('highlight');
-                discardEl.classList.remove('highlight');
-            } else {
-                statusEl.innerText = "Opponent's Turn";
-                drawDeck.classList.remove('highlight');
-                discardEl.classList.remove('highlight');
-            }
-        }
-
-        // --- DRAWING ACTIONS ---
-        document.getElementById('draw-deck').addEventListener('click', () => {
-            if(gameState !== 'PLAYER_DRAW' || deck.length === 0) return;
-            sfxPlay.cloneNode().play();
-            
-            let drawnCard = deck.pop();
-            playerHand.push(drawnCard);
-            document.getElementById('player-hand').appendChild(createPlayerCard(drawnCard));
-            
-            setGameState('PLAYER_DISCARD');
-        });
-
-        document.getElementById('discard-pile').addEventListener('click', () => {
-            if(gameState !== 'PLAYER_DRAW' || discardPile.length === 0) return;
-            sfxPlay.cloneNode().play();
-            
-            let pickedCard = discardPile.pop();
-            playerHand.push(pickedCard);
-            document.getElementById('player-hand').appendChild(createPlayerCard(pickedCard));
-            updateDiscardUI();
-
-            setGameState('PLAYER_DISCARD');
-        });
-
-        // --- AI LOGIC (SKELETON) ---
-        function aiTurn() {
-            // 1. AI Draws (from deck for now)
-            if(deck.length > 0) {
-                deck.pop(); 
-                sfxPlay.cloneNode().play();
-                const aiHandEl = document.getElementById('ai-hand');
-                let newAiCard = document.createElement('div');
-                newAiCard.className = 'card deal-anim';
-                newAiCard.style.marginLeft = '-40px';
-                aiHandEl.appendChild(newAiCard);
-                
-                // 2. AI Discards
-                setTimeout(() => {
-                    if(aiHandEl.children.length > 0) {
-                        let cardToThrow = aiHandEl.lastChild;
-                        cardToThrow.classList.add('throw-anim');
-                        sfxPlay.cloneNode().play();
-                        
-                        // Fake a discard card since AI doesn't know its hand yet
-                        let randomDiscard = cardNames[Math.floor(Math.random() * cardNames.length)];
-                        discardPile.push(randomDiscard);
-                        
-                        setTimeout(() => {
-                            cardToThrow.remove();
-                            updateDiscardUI();
-                            setGameState('PLAYER_DRAW');
-                        }, 300);
-                    }
-                }, 1000);
-            }
-        }
-
-        // --- DARK SOULS EMBERS ---
-        const canvas = document.getElementById('emberCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let embersArray = [];
-        class Ember {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 100;
-                this.size = Math.random() * 3 + 0.5; // Smaller
-                this.speedY = Math.random() * 1.5 + 0.5; // Slower
-                this.speedX = Math.random() * 1 - 0.5;
-                this.color = `rgba(255, ${Math.random() * 100 + 100}, 50, ${Math.random() * 0.8 + 0.2})`; // Orange/White
-            }
-            update() {
-                this.y -= this.speedY;
-                this.x += this.speedX;
-                if (this.size > 0.05) this.size -= 0.01;
-                if (this.y < 0 || this.size <= 0.05) {
-                    this.x = Math.random() * canvas.width;
-                    this.y = canvas.height + 50;
-                    this.size = Math.random() * 3 + 0.5;
-                }
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        function initEmbers() {
-            for (let i = 0; i < 80; i++) embersArray.push(new Ember());
-        }
-        initEmbers();
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < embersArray.length; i++) {
-                embersArray[i].update();
-                embersArray[i].draw();
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
-</body>
-</html>
