@@ -572,4 +572,277 @@
                     renderHand();
                     updateDiscardUI();
                     renderOpponentHand();
-          
+                    
+                    // Host goes first
+                    setTurn(false); 
+                    break;
+                
+                case 'DRAW_DECK':
+                    deck.pop();
+                    opponentCardCount++;
+                    renderOpponentHand();
+                    sfxPlay.cloneNode().play();
+                    break;
+                
+                case 'DRAW_DISCARD':
+                    discardPile.pop();
+                    updateDiscardUI();
+                    opponentCardCount++;
+                    renderOpponentHand();
+                    sfxPlay.cloneNode().play();
+                    break;
+                
+                case 'DISCARD':
+                    discardPile.push(data.card);
+                    opponentCardCount--;
+                    updateDiscardUI();
+                    renderOpponentHand();
+                    sfxPlay.cloneNode().play();
+                    // Opponent discarded, so now it's our turn
+                    setTurn(true);
+                    break;
+
+                case 'DECLARE_WIN':
+                    showEndGame(false); // We lost
+                    break;
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function initializeHostGame() {
+            // Shuffle
+            deck = [...cardNames].sort(() => Math.random() - 0.5);
+            
+            // Deal 10 cards each
+            playerHand = deck.splice(-10, 10);
+            const clientHand = deck.splice(-10, 10);
+            
+            // 1 card to discard
+            discardPile.push(deck.pop());
+            opponentCardCount = 10;
+
+            renderHand();
+            updateDiscardUI();
+            renderOpponentHand();
+
+            // Send state to client
+            sendData('GAME_STATE', {
+                deck: deck,
+                discardPile: discardPile,
+                clientHand: clientHand,
+                hostHandCount: playerHand.length
+            });
+
+            // Host goes first
+            setTimeout(() => setTurn(true), 1000);
+        }
+
+        function renderHand() {
+            const pHandEl = document.getElementById('player-hand');
+            pHandEl.innerHTML = '';
+            
+            // Auto sort visually and logically
+            playerHand = sortCards(playerHand);
+
+            playerHand.forEach((cardStr, index) => {
+                setTimeout(() => {
+                    let el = document.createElement('div');
+                    el.className = 'card deal-anim';
+                    el.style.backgroundImage = `url('${cardStr}')`;
+                    el.dataset.card = cardStr;
+                    
+                    el.addEventListener('click', () => handleHandCardClick(cardStr, el));
+                    pHandEl.appendChild(el);
+                }, index * 50); // Staggered animation
+            });
+        }
+
+        function renderOpponentHand() {
+            const oppHandEl = document.getElementById('opponent-hand');
+            oppHandEl.innerHTML = '';
+            oppStatusEl.innerText = `Rival's Cards: ${opponentCardCount}`;
+            
+            // Draw face down cards overlapping
+            for(let i = 0; i < opponentCardCount; i++) {
+                let el = document.createElement('div');
+                el.className = 'card';
+                el.style.marginLeft = i === 0 ? '0' : '-60px'; // Overlap for enemy to save space
+                el.style.transform = 'scale(0.8)';
+                oppHandEl.appendChild(el);
+            }
+        }
+
+        function updateDiscardUI() {
+            const discardEl = document.getElementById('discard-pile');
+            if(discardPile.length > 0) {
+                discardEl.style.backgroundImage = `url('${discardPile[discardPile.length - 1]}')`;
+                discardEl.style.opacity = '1';
+            } else {
+                discardEl.style.opacity = '0';
+            }
+        }
+
+        function setTurn(isMyTurn) {
+            myTurn = isMyTurn;
+            hasDrawnThisTurn = false;
+            
+            const drawDeck = document.getElementById('draw-deck');
+            const discardEl = document.getElementById('discard-pile');
+
+            if (myTurn) {
+                statusEl.innerText = "Your Turn: Draw a Card";
+                statusEl.style.color = "#ffffff";
+                drawDeck.classList.add('highlight');
+                if(discardPile.length > 0) discardEl.classList.add('highlight');
+                declareWinBtn.style.display = 'block';
+            } else {
+                statusEl.innerText = "Rival is thinking...";
+                statusEl.style.color = "#888888";
+                drawDeck.classList.remove('highlight');
+                discardEl.classList.remove('highlight');
+                declareWinBtn.style.display = 'none';
+            }
+        }
+
+        // --- PLAYER ACTIONS ---
+
+        // 1. Draw from Deck
+        document.getElementById('draw-deck').addEventListener('click', () => {
+            if (!myTurn || hasDrawnThisTurn || deck.length === 0) return;
+            
+            sfxPlay.cloneNode().play();
+            let drawnCard = deck.pop();
+            playerHand.push(drawnCard);
+            renderHand();
+            
+            hasDrawnThisTurn = true;
+            statusEl.innerText = "Your Turn: Discard a Card";
+            document.getElementById('draw-deck').classList.remove('highlight');
+            document.getElementById('discard-pile').classList.remove('highlight');
+
+            sendData('DRAW_DECK');
+        });
+
+        // 2. Draw from Discard
+        document.getElementById('discard-pile').addEventListener('click', () => {
+            if (!myTurn || hasDrawnThisTurn || discardPile.length === 0) return;
+            
+            sfxPlay.cloneNode().play();
+            let pickedCard = discardPile.pop();
+            playerHand.push(pickedCard);
+            renderHand();
+            updateDiscardUI();
+            
+            hasDrawnThisTurn = true;
+            statusEl.innerText = "Your Turn: Discard a Card";
+            document.getElementById('draw-deck').classList.remove('highlight');
+            document.getElementById('discard-pile').classList.remove('highlight');
+
+            sendData('DRAW_DISCARD');
+        });
+
+        // 3. Discard from Hand
+        function handleHandCardClick(cardStr, element) {
+            if (!myTurn || !hasDrawnThisTurn) return; // Must draw first
+
+            // Remove from hand array
+            playerHand = playerHand.filter(c => c !== cardStr);
+            discardPile.push(cardStr);
+            
+            element.classList.add('throw-anim');
+            sfxPlay.cloneNode().play();
+            
+            // Re-render hand minus discarded card
+            setTimeout(() => {
+                renderHand();
+                updateDiscardUI();
+                sendData('DISCARD', { card: cardStr });
+                setTurn(false); // End turn
+            }, 300);
+        }
+
+        // 4. Declare Victory
+        declareWinBtn.addEventListener('click', () => {
+            if (!myTurn) return;
+            // Note: A real Rummy game requires server validation of melds.
+            // Since this is P2P honor system based on prompt ("button that lets u declare that u arranged all ur cards so u won")
+            sendData('DECLARE_WIN');
+            showEndGame(true);
+        });
+
+        function showEndGame(isWinner) {
+            const modal = document.getElementById('endgame-modal');
+            const text = document.getElementById('endgame-text');
+            
+            if (isWinner) {
+                text.innerText = "VICTORY ACHIEVED";
+                text.style.color = "#e0c080";
+                text.style.textShadow = "0 0 20px #e0c080";
+            } else {
+                text.innerText = "YOU DEFEATED";
+                text.style.color = "#cc0000";
+                text.style.textShadow = "0 0 20px #cc0000";
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // --- DARK SOULS EMBERS (Background Effect) ---
+        const canvas = document.getElementById('emberCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let embersArray = [];
+        class Ember {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 3 + 0.5;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.color = `rgba(255, ${Math.random() * 100 + 100}, 50, ${Math.random() * 0.8 + 0.2})`;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.size > 0.05) this.size -= 0.01;
+                if (this.y < 0 || this.size <= 0.05) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 50;
+                    this.size = Math.random() * 3 + 0.5;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initEmbers() {
+            for (let i = 0; i < 80; i++) embersArray.push(new Ember());
+        }
+        initEmbers();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < embersArray.length; i++) {
+                embersArray[i].update();
+                embersArray[i].draw();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
