@@ -110,10 +110,12 @@
             margin-top: 10px;
         }
 
-        .souls-btn:hover {
-            border: 1px solid #ffffff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            background: rgba(255, 255, 255, 0.05);
+        @media (hover: hover) {
+            .souls-btn:hover {
+                border: 1px solid #ffffff;
+                box-shadow: 0 0 15px rgba(255,255,255,0.4);
+                background: rgba(255, 255, 255, 0.05);
+            }
         }
 
         .souls-btn:active {
@@ -201,7 +203,7 @@
         /* Player Hand - Scrollable */
         #player-hand {
             justify-content: flex-start;
-            gap: 15px; /* Slight gap instead of overlap for easier reading */
+            gap: 15px; 
             width: 100vw;
             padding: 20px 40px;
             overflow-x: auto;
@@ -249,8 +251,15 @@
             cursor: pointer;
         }
 
-        .card:hover {
-            transform: translateY(-15px);
+        @media (hover: hover) {
+            .card:hover {
+                transform: translateY(-15px);
+                z-index: 10;
+            }
+        }
+        
+        .card:active {
+            transform: translateY(-10px);
             z-index: 10;
         }
 
@@ -300,13 +309,33 @@
             border-color: #a00;
             color: #ffcccc;
             box-shadow: 0 0 10px rgba(200, 0, 0, 0.3);
-            display: none; /* Shown only during turn */
+            display: none; 
+            transition: all 0.3s ease;
         }
         
-        #declare-win-btn:hover {
-            background: rgba(150, 0, 0, 0.8);
-            border-color: #f00;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+        @media (hover: hover) {
+            #declare-win-btn:hover {
+                background: rgba(150, 0, 0, 0.8);
+                border-color: #f00;
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+            }
+        }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 768px) {
+            .fullscreen-menu h1 { font-size: 2.5rem; }
+            .modal-box { padding: 25px 15px; width: 95%; }
+            .card {
+                width: 25vw;
+                max-width: 85px;
+            }
+            #table-center { gap: 20px; height: 30vh; }
+            .hand-container { height: 25vh; }
+            #player-hand { padding: 10px 20px; gap: 8px; }
+            #game-status { font-size: 1.3rem; }
+            .souls-btn { padding: 12px 20px; font-size: 1rem; }
+            #hud { top: 10px; left: 10px; right: 10px; flex-wrap: wrap; gap: 10px; }
+            .peer-id-display { font-size: 1.1rem; }
         }
 
     </style>
@@ -329,7 +358,7 @@
                 <li><strong>Melds:</strong> A valid set is either 3 or 4 cards of the same rank (e.g., three 7s) OR a sequence of 3+ consecutive cards of the same suit (e.g., 4, 5, 6 of Hearts).</li>
                 <li><strong>On Your Turn:</strong> You must draw one card from either the hidden deck or the discard pile.</li>
                 <li><strong>Ending Your Turn:</strong> You must discard one card from your hand to the discard pile.</li>
-                <li><strong>Victory:</strong> Once all cards in your hand form valid melds, click the "Declare Victory" button to claim your triumph.</li>
+                <li><strong>Victory:</strong> Once all 10 cards in your hand form valid melds, click the "Declare Victory" button to claim your triumph.</li>
             </ul>
             <p><em>Your hand will be automatically sorted to aid your dark quest.</em></p>
             <button class="souls-btn" id="understood-btn">I Understand</button>
@@ -367,7 +396,7 @@
     <div id="game-area">
         <div id="hud">
             <button class="souls-btn small-btn" id="declare-win-btn">Declare Victory</button>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; margin-left: auto;">
                 <button class="souls-btn small-btn" id="skip-song-btn">Skip Track</button>
             </div>
         </div>
@@ -397,7 +426,7 @@
         menuMusic.loop = true;
         menuMusic.volume = MASTER_VOLUME;
 
-        const track1 = new Audio('menumusic.mp3'); track1.volume = MASTER_VOLUME;
+        const track1 = new Audio('victory.mp3'); track1.volume = MASTER_VOLUME;
         const track2 = new Audio('winter.mp3');    track2.volume = MASTER_VOLUME;
         const track3 = new Audio('summer.mp3');    track3.volume = MASTER_VOLUME;
         
@@ -417,12 +446,6 @@
 
         document.getElementById('skip-song-btn').addEventListener('click', playNextSong);
 
-        document.body.addEventListener('click', () => {
-            if(document.getElementById('main-menu').style.display !== 'none' && menuMusic.paused) {
-                menuMusic.play().catch(e => console.log(e));
-            }
-        }, {once: true});
-
         // --- DECK AND CARD DATA ---
         const cardNames = [
             'sa.jpg','s2.jpg','s3.jpg','s4.jpg','s5.jpg','s6.jpg','s7.jpg','s8.jpg','s9.jpg','s10.jpg','sj.jpg','sq.jpg','sk.jpg',
@@ -436,12 +459,11 @@
         const rankOrder = { 'a': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'j': 11, 'q': 12, 'k': 13 };
 
         function getCardValue(cardStr) {
-            // Extracts suit and rank from string like 's10.jpg' or 'cj.png'
             const match = cardStr.match(/^([a-z])([a-z0-9]+)\./);
             if(!match) return { suit: 0, rank: 0 };
             const suit = match[1];
             const rank = match[2];
-            return { suit: suitOrder[suit] || 0, rank: rankOrder[rank] || 0 };
+            return { suit: suitOrder[suit] || 0, rank: rankOrder[rank] || 0, original: cardStr };
         }
 
         function sortCards(handArray) {
@@ -449,10 +471,66 @@
                 const valA = getCardValue(a);
                 const valB = getCardValue(b);
                 if (valA.suit !== valB.suit) {
-                    return valA.suit - valB.suit; // Group by suit first
+                    return valA.suit - valB.suit;
                 }
-                return valA.rank - valB.rank; // Then by rank (suivi)
+                return valA.rank - valB.rank;
             });
+        }
+
+        // --- RUMMY MELD VALIDATION (To fix victory exploit) ---
+        function validateHandRec(cards) {
+            if(cards.length === 0) return true;
+
+            let first = cards[0];
+
+            // 1. Check for Sets (3 or 4 of same rank, different suits)
+            let sameRanks = cards.filter(c => c.rank === first.rank);
+            if(sameRanks.length >= 3) {
+                let remaining = [...cards];
+                for(let i=0; i<3; i++) remaining.splice(remaining.findIndex(c => c.rank === first.rank), 1);
+                if(validateHandRec(remaining)) return true;
+
+                if(sameRanks.length === 4) {
+                     let rem4 = [...cards];
+                     for(let i=0; i<4; i++) rem4.splice(rem4.findIndex(c => c.rank === first.rank), 1);
+                     if(validateHandRec(rem4)) return true;
+                }
+            }
+
+            // 2. Check for Runs (3+ consecutive of same suit)
+            let suitCards = cards.filter(c => c.suit === first.suit).sort((a,b) => a.rank - b.rank);
+            let run = [first];
+            let currRank = first.rank;
+            
+            for(let i=0; i<suitCards.length; i++) {
+                if(suitCards[i].rank === currRank + 1) {
+                    run.push(suitCards[i]);
+                    currRank++;
+                }
+            }
+
+            if(run.length >= 3) {
+                for(let len = 3; len <= run.length; len++) {
+                    let remaining = [...cards];
+                    let isValid = true;
+                    for(let i=0; i<len; i++) {
+                        let idx = remaining.findIndex(c => c.rank === run[i].rank && c.suit === run[i].suit);
+                        if(idx !== -1) remaining.splice(idx, 1);
+                        else isValid = false;
+                    }
+                    if(isValid && validateHandRec(remaining)) return true;
+                }
+            }
+
+            return false;
+        }
+
+        function isWinningHand(handStrs) {
+            // Usually need exactly 10 cards sorted into melds to win
+            if(handStrs.length !== 10) return false; 
+            let cards = handStrs.map(getCardValue);
+            cards.sort((a,b) => a.rank - b.rank);
+            return validateHandRec(cards);
         }
 
         // --- GAME STATE ---
@@ -477,6 +555,9 @@
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('tutorial-modal').style.display = 'flex';
+            
+            // Audio autoplay policy fix: Trigger play on explicit click
+            menuMusic.play().catch(e => console.warn("Audio waiting for user interaction", e));
         });
 
         document.getElementById('understood-btn').addEventListener('click', () => {
@@ -486,13 +567,12 @@
         });
 
         function initializePeer() {
-            peer = new Peer(); // Uses default PeerJS cloud server
+            peer = new Peer(); 
             
             peer.on('open', (id) => {
                 document.getElementById('my-id').innerText = id;
             });
 
-            // When someone connects to US (We become Host)
             peer.on('connection', (connection) => {
                 conn = connection;
                 isHost = true;
@@ -543,6 +623,9 @@
         function transitionToGame() {
             menuMusic.pause();
             menuMusic.currentTime = 0;
+            
+            // Start the in-game playlist
+            currentSongIndex = 0;
             inGamePlaylist[0].play().catch(e => console.log(e));
 
             document.getElementById('lobby-modal').style.display = 'none';
@@ -563,7 +646,6 @@
         function handleNetworkData(data) {
             switch(data.type) {
                 case 'GAME_STATE':
-                    // Client receives initial deal
                     deck = data.deck;
                     discardPile = data.discardPile;
                     playerHand = data.clientHand;
@@ -572,8 +654,6 @@
                     renderHand();
                     updateDiscardUI();
                     renderOpponentHand();
-                    
-                    // Host goes first
                     setTurn(false); 
                     break;
                 
@@ -598,7 +678,6 @@
                     updateDiscardUI();
                     renderOpponentHand();
                     sfxPlay.cloneNode().play();
-                    // Opponent discarded, so now it's our turn
                     setTurn(true);
                     break;
 
@@ -610,14 +689,9 @@
 
         // --- GAME LOGIC ---
         function initializeHostGame() {
-            // Shuffle
             deck = [...cardNames].sort(() => Math.random() - 0.5);
-            
-            // Deal 10 cards each
             playerHand = deck.splice(-10, 10);
             const clientHand = deck.splice(-10, 10);
-            
-            // 1 card to discard
             discardPile.push(deck.pop());
             opponentCardCount = 10;
 
@@ -625,7 +699,6 @@
             updateDiscardUI();
             renderOpponentHand();
 
-            // Send state to client
             sendData('GAME_STATE', {
                 deck: deck,
                 discardPile: discardPile,
@@ -633,15 +706,12 @@
                 hostHandCount: playerHand.length
             });
 
-            // Host goes first
             setTimeout(() => setTurn(true), 1000);
         }
 
         function renderHand() {
             const pHandEl = document.getElementById('player-hand');
             pHandEl.innerHTML = '';
-            
-            // Auto sort visually and logically
             playerHand = sortCards(playerHand);
 
             playerHand.forEach((cardStr, index) => {
@@ -653,7 +723,7 @@
                     
                     el.addEventListener('click', () => handleHandCardClick(cardStr, el));
                     pHandEl.appendChild(el);
-                }, index * 50); // Staggered animation
+                }, index * 50); 
             });
         }
 
@@ -662,11 +732,10 @@
             oppHandEl.innerHTML = '';
             oppStatusEl.innerText = `Rival's Cards: ${opponentCardCount}`;
             
-            // Draw face down cards overlapping
             for(let i = 0; i < opponentCardCount; i++) {
                 let el = document.createElement('div');
                 el.className = 'card';
-                el.style.marginLeft = i === 0 ? '0' : '-60px'; // Overlap for enemy to save space
+                el.style.marginLeft = i === 0 ? '0' : '-60px'; 
                 el.style.transform = 'scale(0.8)';
                 oppHandEl.appendChild(el);
             }
@@ -743,29 +812,43 @@
 
         // 3. Discard from Hand
         function handleHandCardClick(cardStr, element) {
-            if (!myTurn || !hasDrawnThisTurn) return; // Must draw first
+            if (!myTurn || !hasDrawnThisTurn) return; 
 
-            // Remove from hand array
             playerHand = playerHand.filter(c => c !== cardStr);
             discardPile.push(cardStr);
             
             element.classList.add('throw-anim');
             sfxPlay.cloneNode().play();
             
-            // Re-render hand minus discarded card
             setTimeout(() => {
                 renderHand();
                 updateDiscardUI();
                 sendData('DISCARD', { card: cardStr });
-                setTurn(false); // End turn
+                setTurn(false);
             }, 300);
         }
 
-        // 4. Declare Victory
+        // 4. Declare Victory (Fixed with Validation)
         declareWinBtn.addEventListener('click', () => {
             if (!myTurn) return;
-            // Note: A real Rummy game requires server validation of melds.
-            // Since this is P2P honor system based on prompt ("button that lets u declare that u arranged all ur cards so u won")
+
+            // Check if cards are valid melds
+            if (!isWinningHand(playerHand)) {
+                const originalText = declareWinBtn.innerText;
+                const originalColor = declareWinBtn.style.color;
+                
+                declareWinBtn.innerText = "Invalid Melds!";
+                declareWinBtn.style.color = "#ff4444";
+                declareWinBtn.style.borderColor = "#ff4444";
+                
+                setTimeout(() => {
+                    declareWinBtn.innerText = originalText;
+                    declareWinBtn.style.color = originalColor;
+                    declareWinBtn.style.borderColor = "";
+                }, 2000);
+                return;
+            }
+
             sendData('DECLARE_WIN');
             showEndGame(true);
         });
